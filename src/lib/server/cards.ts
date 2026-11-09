@@ -119,11 +119,21 @@ function meter(fraction: number): Node {
 	);
 }
 
+/** The drawing in static/logo.svg without its tile, which is the colour of the card. */
+const MARK = `data:image/svg+xml,${encodeURIComponent(
+	`<svg xmlns="http://www.w3.org/2000/svg" viewBox="45 118 422 276"><g transform="rotate(-30 256 256)" fill="${SIGNAL}"><rect x="34" y="232" width="72" height="48"/><rect x="406" y="232" width="72" height="48"/></g><circle cx="256" cy="256" r="96" fill="none" stroke="${INK}" stroke-width="48"/></svg>`
+)}`;
+
 function header(reference?: string): Node {
 	return h(
 		'div',
-		{ justifyContent: 'space-between', alignItems: 'baseline' },
-		h('div', { fontSize: 32, fontWeight: 600, letterSpacing: -0.4 }, 'OpenResearch'),
+		{ justifyContent: 'space-between', alignItems: 'center' },
+		h(
+			'div',
+			{ alignItems: 'center', gap: 14 },
+			{ type: 'img', props: { src: MARK, width: 52, height: 34 } },
+			h('div', { fontSize: 32, fontWeight: 600, letterSpacing: -0.4 }, 'OpenResearch')
+		),
 		reference ? h('div', { fontFamily: MONO, fontSize: 24, color: MUTED }, reference) : null
 	);
 }

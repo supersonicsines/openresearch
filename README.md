@@ -1,3 +1,5 @@
+<img src="static/logo.svg" alt="" width="56" height="56">
+
 # OpenResearch
 
 A public board of research prompts. Any prompt of up to 250 words may be listed by anyone with a GitHub

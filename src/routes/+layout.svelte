@@ -13,6 +13,7 @@
 	import Handle from '#lib/components/Handle.svelte';
 	import Ticker from '#lib/components/Ticker.svelte';
 	import GitHubMark from '#lib/components/GitHubMark.svelte';
+	import LogoMark from '#lib/components/LogoMark.svelte';
 	import type { LayoutProps } from './$types';
 
 	let { data, children }: LayoutProps = $props();
@@ -111,7 +112,7 @@
 {/if}
 
 <header class="site wrap">
-	<a class="mark serif" href="/">OpenResearch</a>
+	<a class="mark serif" href="/"><LogoMark />OpenResearch</a>
 	<nav aria-label="Main">
 		{#each nav as item (item.href)}
 			<a href={item.href} aria-current={item.current(path) ? 'page' : undefined}>{item.label}</a>
@@ -168,7 +169,10 @@
 		padding-top: max(16px, env(safe-area-inset-top));
 	}
 	.mark {
-		padding-block: 6px;
+		display: flex;
+		align-items: center;
+		gap: 9px;
+		padding-block: 4px;
 		font-size: 1.3125rem;
 		font-weight: 500;
 		letter-spacing: -0.01em;
