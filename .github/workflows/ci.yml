@@ -62,3 +62,26 @@ jobs:
           docker stop --timeout 30 openresearch
           docker logs openresearch
           test "$(docker inspect --format '{{.State.ExitCode}}' openresearch)" = 0
+
+  # A push to main that passes every check goes live on openresearch.click. The token can deploy this one Railway
+  # project and nothing else, and only main can read it. A deployment waits for runs in progress to finish (DEPLOY.md).
+  deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [check, e2e, docker]
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://openresearch.click
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v7
+      - name: Deploy to Railway
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: npx -y @railway/cli@5.71.0 up --ci --service dd733760-96cc-48b4-a58d-ee83da8fb954
+      - name: The live site answers
+        run: |
+          for i in $(seq 1 40); do curl -sf https://openresearch.click/healthz && exit 0; sleep 10; done
+          exit 1
