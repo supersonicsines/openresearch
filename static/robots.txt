@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /account
+Disallow: /api/
+Disallow: /auth/
+Disallow: /git/
+Disallow: /p/*/archive.zip
+Disallow: /p/*/events

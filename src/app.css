@@ -1,0 +1,622 @@
+:root {
+	--bg: #ffffff;
+	--ink: #17181a;
+	--ink-2: #5c5e62;
+	--ink-3: #85878b;
+	--rule: #e9e9e6;
+	--rule-2: #d3d3cf;
+	--surface: #f6f6f4;
+	--accent: #1c3f6e;
+	--warn: #9c1c12;
+	--warn-ink: #ffffff;
+	--warn-soft: #fbeeec;
+	--ok: #1d6a45;
+	--signal: #0a7a4c;
+	--signal-press: #086640;
+	--signal-ink: #ffffff;
+	--press: #2c2d30;
+	--scrim: rgb(20 21 23 / 0.32);
+	--shadow: 0 1px 2px rgb(20 21 23 / 0.05), 0 12px 40px rgb(20 21 23 / 0.12);
+	--lead: #0e1c30;
+	--lead-hover: #13253d;
+	--lead-ink: #f4f7fb;
+	--lead-ink-2: rgb(236 242 250 / 0.72);
+	--lead-grid: rgb(255 255 255 / 0.045);
+	--lead-signal: #5fe3a8;
+
+	--serif: 'Source Serif 4 Variable', Georgia, 'Times New Roman', serif;
+	--sans: 'Hanken Grotesk Variable', -apple-system, 'Helvetica Neue', Arial, sans-serif;
+	--mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+	--ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+	--ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+	--gutter: max(20px, env(safe-area-inset-left), env(safe-area-inset-right));
+	--wide: 1080px;
+	--measure: 40rem;
+
+	color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--bg: #161719;
+		--ink: #ececea;
+		--ink-2: #a5a6a8;
+		--ink-3: #7c7d80;
+		--rule: #2a2b2e;
+		--rule-2: #3c3d41;
+		--surface: #1f2022;
+		--accent: #a9c1e6;
+		--warn: #a8241a;
+		--warn-soft: #2d1a18;
+		--ok: #6fbf97;
+		--signal: #4ed49a;
+		--signal-press: #3cc088;
+		--signal-ink: #06231a;
+		--press: #d4d4d2;
+		--scrim: rgb(0 0 0 / 0.5);
+		--shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 16px 48px rgb(0 0 0 / 0.5);
+		--lead: #12263f;
+		--lead-hover: #182f4c;
+		--lead-ink: #f3f5f8;
+	}
+}
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+html {
+	-webkit-text-size-adjust: 100%;
+	text-size-adjust: 100%;
+	-webkit-tap-highlight-color: transparent;
+	scrollbar-gutter: stable;
+}
+
+body {
+	margin: 0;
+	min-height: 100dvh;
+	background: var(--bg);
+	color: var(--ink);
+	font: 400 1rem/1.5 var(--sans);
+	font-feature-settings: 'kern', 'liga', 'calt';
+	-webkit-font-smoothing: antialiased;
+	overflow-wrap: break-word;
+}
+
+h1,
+h2,
+h3,
+p,
+ul,
+ol,
+dl,
+dd,
+figure {
+	margin: 0;
+}
+
+ul,
+ol {
+	padding: 0;
+	list-style: none;
+}
+
+h1,
+h2,
+h3 {
+	font-weight: 400;
+	text-wrap: balance;
+}
+
+img,
+svg {
+	display: block;
+}
+
+a {
+	color: inherit;
+	text-decoration: none;
+}
+
+button,
+input,
+textarea,
+select {
+	font: inherit;
+	color: inherit;
+}
+
+button {
+	background: none;
+	border: 0;
+	padding: 0;
+	cursor: pointer;
+}
+
+/* Taps register at once, and controls do not select their labels on a long press. */
+a,
+button,
+label,
+summary {
+	touch-action: manipulation;
+}
+
+button,
+label,
+summary,
+nav a,
+.btn {
+	user-select: none;
+	-webkit-user-select: none;
+	-webkit-touch-callout: none;
+}
+
+:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 2px;
+	border-radius: 2px;
+}
+
+::selection {
+	background: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.skip {
+	position: absolute;
+	left: var(--gutter);
+	top: -100px;
+	padding: 8px 14px;
+	background: var(--ink);
+	color: var(--bg);
+	border-radius: 6px;
+	z-index: 10;
+}
+
+.skip:focus {
+	top: 12px;
+}
+
+.wrap {
+	width: 100%;
+	max-width: calc(var(--wide) + var(--gutter) * 2);
+	margin-inline: auto;
+	padding-inline: var(--gutter);
+}
+
+.serif {
+	font-family: var(--serif);
+}
+
+/* Every measured quantity is set in the same face, so that figures can be found at a glance. */
+.figures {
+	font-family: var(--mono);
+	font-variant-numeric: lining-nums tabular-nums;
+	letter-spacing: -0.02em;
+}
+
+.ref {
+	font-family: var(--mono);
+	font-size: 0.75rem;
+	font-weight: 400;
+	color: var(--ink-2);
+	letter-spacing: 0;
+}
+
+/* A short status beside a figure: new, in progress. */
+.tag {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	font: 500 0.75rem/1 var(--mono);
+	color: var(--signal);
+	white-space: nowrap;
+}
+
+.tag .dot {
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	background: currentColor;
+	animation: breathe 2.4s ease-in-out infinite;
+}
+
+@keyframes breathe {
+	50% {
+		opacity: 0.35;
+	}
+}
+
+.muted {
+	color: var(--ink-2);
+}
+
+.small {
+	font-size: 0.875rem;
+	line-height: 1.45;
+}
+
+/* Text links keep an underline so that they can be recognised without hovering. */
+.link {
+	color: inherit;
+	text-decoration: underline;
+	text-decoration-color: var(--rule-2);
+	text-decoration-thickness: 1px;
+	text-underline-offset: 0.2em;
+	transition: text-decoration-color 0.15s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+	.link:hover {
+		text-decoration-color: currentColor;
+	}
+}
+
+/* Tabs with a short note or a set of filters at the far end. */
+.toolbar {
+	display: flex;
+	align-items: flex-end;
+	justify-content: space-between;
+	gap: 0 24px;
+	flex-wrap: wrap;
+}
+
+.toolbar .tabs.tabs {
+	box-shadow: none;
+}
+
+.toolbar-end {
+	padding-bottom: 11px;
+	font-size: 0.875rem;
+	color: var(--ink-2);
+}
+
+/* Figures in a row of ruled cells, sharing the rules of the board. */
+.stats-strip {
+	display: grid;
+	grid-template-columns: minmax(max-content, 1.5fr) repeat(3, minmax(0, 1fr));
+	gap: 1px;
+	background: var(--rule);
+	border: 1px solid var(--rule);
+	border-radius: 10px;
+	overflow: hidden;
+}
+
+.stats-strip > div {
+	display: grid;
+	gap: 5px;
+	padding: 13px 14px 12px;
+	background: var(--bg);
+}
+
+@media (max-width: 460px) {
+	.stats-strip {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+.stats-strip dd {
+	order: -1;
+	white-space: nowrap;
+	font-size: 1.5rem;
+	font-weight: 500;
+	line-height: 1.1;
+}
+
+.stats-strip dt {
+	font-size: 0.8125rem;
+	line-height: 1.25;
+	color: var(--ink-2);
+}
+
+/* Buttons */
+.btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	min-height: 40px;
+	padding: 0 16px;
+	border-radius: 8px;
+	border: 1px solid transparent;
+	font: 500 0.9375rem/1 var(--sans);
+	white-space: nowrap;
+	cursor: pointer;
+	transition:
+		background-color 0.15s ease,
+		border-color 0.15s ease,
+		color 0.15s ease,
+		transform 0.12s var(--ease-out),
+		opacity 0.15s ease;
+}
+
+.btn:active:not(:disabled) {
+	transform: scale(0.97);
+}
+
+.btn:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.btn-primary {
+	background: var(--ink);
+	color: var(--bg);
+}
+
+.btn-signal {
+	background: var(--signal);
+	color: var(--signal-ink);
+}
+
+.btn-quiet {
+	border-color: var(--rule-2);
+	background: transparent;
+}
+
+.btn-danger {
+	border-color: var(--rule-2);
+	color: var(--warn);
+}
+
+.btn-wide {
+	width: 100%;
+}
+
+.btn-small {
+	min-height: 34px;
+	padding: 0 12px;
+	font-size: 0.875rem;
+	border-radius: 7px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+	.btn-primary:hover:not(:disabled) {
+		background: var(--press);
+	}
+	.btn-signal:hover:not(:disabled) {
+		background: var(--signal-press);
+	}
+	.btn-quiet:hover:not(:disabled),
+	.btn-danger:hover:not(:disabled) {
+		background: var(--surface);
+	}
+}
+
+/* Forms: 16px text prevents iOS from zooming the page on focus. */
+.field {
+	width: 100%;
+	min-height: 44px;
+	padding: 10px 12px;
+	font-size: 1rem;
+	line-height: 1.4;
+	background: var(--bg);
+	border: 1px solid var(--rule-2);
+	border-radius: 8px;
+	transition: border-color 0.15s ease;
+}
+
+.field::placeholder {
+	color: var(--ink-3);
+}
+
+.field:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: -1px;
+	border-color: transparent;
+}
+
+.label {
+	display: block;
+	margin-bottom: 6px;
+	font-size: 0.9375rem;
+	font-weight: 500;
+}
+
+.error {
+	color: var(--warn);
+	font-size: 0.9375rem;
+}
+
+@media (prefers-color-scheme: dark) {
+	.error,
+	.btn-danger {
+		color: #ef9a91;
+	}
+}
+
+/* The warning about spending limits is meant to be impossible to miss. */
+.warning {
+	padding: 16px 18px;
+	border-radius: 10px;
+	background: var(--warn);
+	color: var(--warn-ink);
+	font-size: 0.9375rem;
+	line-height: 1.5;
+}
+
+.warning strong {
+	display: block;
+	margin-bottom: 4px;
+	font-size: 1.125rem;
+	line-height: 1.3;
+	font-weight: 600;
+}
+
+.warning a {
+	color: inherit;
+	text-decoration: underline;
+	text-underline-offset: 0.2em;
+}
+
+code,
+.key,
+kbd {
+	font-variant-ligatures: none;
+	font-feature-settings: normal;
+}
+
+/* Long-form text produced by runs */
+.prose {
+	font-family: var(--serif);
+	font-size: 1.125rem;
+	line-height: 1.62;
+	max-width: var(--measure);
+	hanging-punctuation: first;
+}
+
+.prose > * + * {
+	margin-top: 1em;
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4 {
+	font-weight: 500;
+	line-height: 1.25;
+	letter-spacing: -0.005em;
+	margin-top: 1.9em;
+}
+
+.prose > :first-child {
+	margin-top: 0;
+}
+
+.prose h1 {
+	font-size: 1.6rem;
+}
+
+.prose h2 {
+	font-size: 1.4rem;
+}
+
+.prose h3,
+.prose h4 {
+	font-size: 1.15rem;
+}
+
+.prose h2 + *,
+.prose h3 + * {
+	margin-top: 0.55em;
+}
+
+.prose a {
+	color: var(--accent);
+	text-decoration: underline;
+	text-decoration-thickness: 1px;
+	text-decoration-color: color-mix(in srgb, var(--accent) 35%, transparent);
+	text-underline-offset: 0.17em;
+	overflow-wrap: anywhere;
+}
+
+@media (hover: hover) and (pointer: fine) {
+	.prose a:hover {
+		text-decoration-color: currentColor;
+	}
+}
+
+.prose ul,
+.prose ol {
+	padding-left: 1.25em;
+}
+
+.prose ul {
+	list-style: disc;
+}
+
+.prose ol {
+	list-style: decimal;
+}
+
+.prose li + li {
+	margin-top: 0.35em;
+}
+
+.prose li::marker {
+	color: var(--ink-3);
+}
+
+.prose blockquote {
+	margin-inline: 0;
+	padding-left: 1em;
+	border-left: 2px solid var(--rule-2);
+	color: var(--ink-2);
+}
+
+.prose table {
+	display: block;
+	max-width: 100%;
+	overflow-x: auto;
+	border-collapse: collapse;
+	font-size: 0.95em;
+	line-height: 1.4;
+	font-variant-numeric: lining-nums tabular-nums;
+}
+
+.prose th,
+.prose td {
+	padding: 8px 14px 8px 0;
+	border-bottom: 1px solid var(--rule);
+	text-align: left;
+	vertical-align: top;
+}
+
+.prose th {
+	font-weight: 500;
+	border-bottom-color: var(--rule-2);
+}
+
+.prose code {
+	font-family: var(--mono);
+	font-size: 0.85em;
+}
+
+.prose pre {
+	overflow-x: auto;
+	padding: 14px 16px;
+	background: var(--surface);
+	border-radius: 8px;
+	font-size: 0.875rem;
+	line-height: 1.5;
+}
+
+.prose hr {
+	border: 0;
+	border-top: 1px solid var(--rule);
+	margin-block: 2em;
+}
+
+/* Text that is shown only to assistive technology. */
+.sr {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+}
+
+/* Page transitions: a brief cross-fade, removed for those who prefer no motion. */
+::view-transition-old(root),
+::view-transition-new(root) {
+	animation-duration: 0.16s;
+	animation-timing-function: ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
+	::view-transition-group(*),
+	::view-transition-old(*),
+	::view-transition-new(*) {
+		animation: none !important;
+	}
+}
