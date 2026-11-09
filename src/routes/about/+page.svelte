@@ -2,15 +2,15 @@
 	import StageDemo from '#lib/components/StageDemo.svelte';
 </script>
 
-<svelte:head><title>About · OpenSearch</title></svelte:head>
+<svelte:head><title>About · OpenResearch</title></svelte:head>
 
 <article class="page">
-	<h1 class="serif">About OpenSearch</h1>
+	<h1 class="serif">About OpenResearch</h1>
 
 	<StageDemo />
 
 	<div class="prose">
-		<p>OpenSearch is a public board of research prompts. Any prompt of up to 250 words may be listed by anyone with an X account, and a public repository is created for it. Research on that prompt is then paid for by whoever chooses to donate towards it.</p>
+		<p>OpenResearch is a public board of research prompts. Any prompt of up to 250 words may be listed by anyone with an X account, and a public repository is created for it. Research on that prompt is then paid for by whoever chooses to donate towards it.</p>
 
 		<h2>How a donation is made</h2>
 		<p>An OpenRouter API key is added to the account, and an amount and a model are chosen. Credit is drawn directly from the key by OpenRouter as each run is carried out. Any part of a donation left unspent is not charged.</p>

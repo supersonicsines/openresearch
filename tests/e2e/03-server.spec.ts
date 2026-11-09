@@ -137,7 +137,7 @@ test('signing in with X works from start to finish, and no token is kept', async
 	expect(session?.httpOnly).toBe(true);
 	expect(session?.sameSite).toBe('Lax');
 	expect(cookies.find((c) => c.name === 'os_oauth')).toBeUndefined();
-	const dump = execFileSync('sh', ['-c', `cat ${DATA}/opensearch.sqlite* | strings`]).toString();
+	const dump = execFileSync('sh', ['-c', `cat ${DATA}/openresearch.sqlite* | strings`]).toString();
 	expect(dump).not.toContain('token-abc');
 });
 

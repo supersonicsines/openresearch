@@ -1,4 +1,4 @@
-# Builds the site for one address: docker build --build-arg ORIGIN=https://example.org -t opensearch .
+# Builds the site for one address: docker build --build-arg ORIGIN=https://example.org -t openresearch .
 # SQLite and the repositories are kept in /data, which must be a persistent volume.
 FROM node:22-bookworm-slim
 

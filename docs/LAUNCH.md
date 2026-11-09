@@ -36,7 +36,6 @@ been spent and no real X sign-in has been made.
 
 ### Before going public
 
-- [ ] The name has been considered. "OpenSearch" is also the name of a widely used search engine project.
 - [ ] The terms and privacy pages have been read, and adjusted as needed. They are a sensible draft, not legal advice, and they name no company or jurisdiction.
 - [ ] A domain has been chosen and pointed at the server.
 - [ ] The X app is on Pay-per-use and Production, **with credit**, and the callback is registered ([DEPLOY.md](DEPLOY.md), step 1).
@@ -70,7 +69,7 @@ If a report is cut short on Sonnet, `MAX_RESEARCH_TOKENS` in `src/lib/budget.ts`
 ### The first hour
 
 - [ ] Three or four good prompts are funded first, so that the first visitor does not see an empty board.
-- [ ] `/admin` and `journalctl -u opensearch -f` are kept open.
+- [ ] `/admin` and `journalctl -u openresearch -f` are kept open.
 - [ ] To stop all spending at once: `MAX_ACTIVE_PROJECTS=0` and a restart.
 
 ## Risks that remain

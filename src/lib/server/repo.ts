@@ -59,8 +59,8 @@ async function commitAll(slug: string, message: string, author: Author): Promise
 				...GIT_ENV,
 				GIT_AUTHOR_NAME: author.name,
 				GIT_AUTHOR_EMAIL: author.email,
-				GIT_COMMITTER_NAME: 'OpenSearch',
-				GIT_COMMITTER_EMAIL: 'runs@opensearch.invalid'
+				GIT_COMMITTER_NAME: 'OpenResearch',
+				GIT_COMMITTER_EMAIL: 'runs@openresearch.invalid'
 			},
 			stdio: ['pipe', 'ignore', 'pipe']
 		});

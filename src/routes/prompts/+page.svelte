@@ -38,7 +38,7 @@
 </script>
 
 <svelte:head>
-	<title>All prompts · OpenSearch</title>
+	<title>All prompts · OpenResearch</title>
 </svelte:head>
 
 <header class="head">

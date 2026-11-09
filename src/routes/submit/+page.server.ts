@@ -14,7 +14,7 @@ function readme(title: string, prompt: string, handle: string) {
 		.join('\n');
 	return `# ${title}
 
-This repository holds a research project from OpenSearch. It was submitted by @${handle}.
+This repository holds a research project from OpenResearch. It was submitted by @${handle}.
 
 ${quoted}
 
@@ -53,7 +53,7 @@ export const actions: Actions = {
 				'open-questions.md': '# Open questions\n\nNone are listed at present.\n'
 			},
 			`Prompt submitted by @${user.handle}`,
-			{ name: `@${user.handle}`, email: `${user.x_id}@x.opensearch.invalid` }
+			{ name: `@${user.handle}`, email: `${user.x_id}@x.openresearch.invalid` }
 		);
 		run(
 			`INSERT INTO projects (slug, title, prompt, author_id, created_at) VALUES (?, ?, ?, ?, ?)`,

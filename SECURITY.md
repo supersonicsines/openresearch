@@ -4,7 +4,7 @@ This site stores other people's OpenRouter keys, so a security problem is taken 
 
 ## Reporting a problem
 
-A problem is reported privately at <https://github.com/supersonicsines/opensearch/security/advisories/new>, never in a public issue or pull request.
+A problem is reported privately at <https://github.com/supersonicsines/openresearch/security/advisories/new>, never in a public issue or pull request.
 The report should say what was found, how it can be reproduced, and what it could lead to. It will be
 acknowledged, and the reporter will be told when it has been fixed.
 

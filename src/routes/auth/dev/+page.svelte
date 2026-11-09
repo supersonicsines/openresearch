@@ -5,7 +5,7 @@
 	let { data, form }: PageProps = $props();
 </script>
 
-<svelte:head><title>Test sign-in · OpenSearch</title></svelte:head>
+<svelte:head><title>Test sign-in · OpenResearch</title></svelte:head>
 
 <div class="page">
 	<h1 class="serif">Test sign-in</h1>

@@ -123,7 +123,7 @@ function header(reference?: string): Node {
 	return h(
 		'div',
 		{ justifyContent: 'space-between', alignItems: 'baseline' },
-		h('div', { fontSize: 32, fontWeight: 600, letterSpacing: -0.4 }, 'OpenSearch'),
+		h('div', { fontSize: 32, fontWeight: 600, letterSpacing: -0.4 }, 'OpenResearch'),
 		reference ? h('div', { fontFamily: MONO, fontSize: 24, color: MUTED }, reference) : null
 	);
 }

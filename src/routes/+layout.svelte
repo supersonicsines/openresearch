@@ -88,17 +88,17 @@
 </script>
 
 <svelte:head>
-	<title>OpenSearch</title>
+	<title>OpenResearch</title>
 	{#if !path.startsWith('/p/') && !path.startsWith('/u/')}
 		<meta name="description" content="Any prompt may be listed. Those that are funded are researched in public, with every run committed to an open repository." />
 		<meta property="og:type" content="website" />
-		<meta property="og:title" content="OpenSearch" />
+		<meta property="og:title" content="OpenResearch" />
 		<meta property="og:description" content="Any prompt may be listed. Those that are funded are researched in public." />
 		<meta property="og:image" content="{page.url.origin}/card/site.png" />
 		<meta property="og:image:width" content="1200" />
 		<meta property="og:image:height" content="630" />
 		<meta name="twitter:card" content="summary_large_image" />
-		<meta name="twitter:title" content="OpenSearch" />
+		<meta name="twitter:title" content="OpenResearch" />
 		<meta name="twitter:description" content="Any prompt may be listed. Those that are funded are researched in public." />
 		<meta name="twitter:image" content="{page.url.origin}/card/site.png" />
 	{/if}
@@ -111,7 +111,7 @@
 {/if}
 
 <header class="site wrap">
-	<a class="mark serif" href="/">OpenSearch</a>
+	<a class="mark serif" href="/">OpenResearch</a>
 	<nav aria-label="Main">
 		{#each nav as item (item.href)}
 			<a href={item.href} aria-current={item.current(path) ? 'page' : undefined}>{item.label}</a>

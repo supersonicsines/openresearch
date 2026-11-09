@@ -18,7 +18,7 @@ const O = process.env.QA_BASE || 'http://localhost:4173';
 const WORDS = '/usr/share/dict/words';
 if (!existsSync(WORDS)) console.warn(`${WORDS} was not found, so every word will be listed as unknown.`);
 const dict = new Set(existsSync(WORDS) ? readFileSync(WORDS, 'utf8').toLowerCase().split('\n') : []);
-const known = new Set(`opensearch openrouter github pkce md html zip x os-.. sk-or api ai http https svelte ref sonnet opus haiku gemini grok deepseek qwen mistral claude gpt luna flash ofgem aes gcm usa unreviewed ok programme organisation offshore perovskite decommissioning bilingual antibiotic antibiotics prescribing rota rotas wearable wearables`.split(/\s+/));
+const known = new Set(`openresearch openrouter github pkce md html zip x or-.. sk-or api ai http https svelte ref sonnet opus haiku gemini grok deepseek qwen mistral claude gpt luna flash ofgem aes gcm usa unreviewed ok programme organisation offshore perovskite decommissioning bilingual antibiotic antibiotics prescribing rota rotas wearable wearables`.split(/\s+/));
 const inflect = (w) => [w, w.replace(/s$/, ''), w.replace(/es$/, ''), w.replace(/ed$/, ''), w.replace(/ed$/, 'e'), w.replace(/ing$/, ''), w.replace(/ing$/, 'e'), w.replace(/ies$/, 'y'), w.replace(/ied$/, 'y'), w.replace(/ly$/, ''), w.replace(/d$/, ''), w.replace(/ised$/, 'ize'), w.replace(/ise$/, 'ize'), w.replace(/ising$/, 'ize'), w.replace(/([a-z])\1ed$/, '$1'), w.replace(/([a-z])\1ing$/, '$1'), w.replace(/er$/, ''), w.replace(/'s$/, ''), w.replace(/s'$/, '')];
 const unknownWords = new Map(), issues = [];
 const note = (kind, where, detail) => issues.push(`${kind.padEnd(10)} ${where}  ${detail}`);
@@ -27,10 +27,10 @@ function checkText(where, text) {
 	for (const m of text.matchAll(/undefined|\bnull\b|\bNaN\b|\[object|\{\{|\}\}|\s[,.;:](\s|$)|\.\.(?!\.)|,,|\$\s\d/g)) note('TEXT', where, JSON.stringify(text.slice(Math.max(0, m.index - 25), m.index + 25)));
 	for (const m of text.matchAll(/[a-z][A-Z][a-z]/g)) {
 		const around = text.slice(Math.max(0, m.index - 12), m.index + 12);
-		if (!/OpenSearch|OpenRouter|GitHub|DeepSeek/.test(around)) note('GLUED', where, JSON.stringify(around));
+		if (!/OpenResearch|OpenRouter|GitHub|DeepSeek/.test(around)) note('GLUED', where, JSON.stringify(around));
 	}
 	for (const m of text.matchAll(/\d[a-zA-Z]{3,}|[a-z]{2}\$\d|[a-z]@[a-zA-Z]/g)) note('GLUED', where, JSON.stringify(text.slice(Math.max(0, m.index - 14), m.index + 14)));
-	const clean = text.replace(/@[A-Za-z0-9_]+/g, ' ').replace(/https?:\S+/g, ' ').replace(/sk-or\S*/g, ' ').replace(/OS-\d+/g, ' ').replace(/[$+]?[\d,.]+[a-z%]{0,2}\b/g, ' ');
+	const clean = text.replace(/@[A-Za-z0-9_]+/g, ' ').replace(/https?:\S+/g, ' ').replace(/sk-or\S*/g, ' ').replace(/OR-\d+/g, ' ').replace(/[$+]?[\d,.]+[a-z%]{0,2}\b/g, ' ');
 	for (const raw of clean.split(/[^A-Za-z'’-]+/)) {
 		const w = raw.toLowerCase().replace(/^['’-]+|['’-]+$/g, '').replace(/’/g, "'");
 		if (w.length < 2 || known.has(w)) continue;

@@ -133,7 +133,7 @@ function GrowingReport({ text, count }: { text: string; count: number }) {
   )
 }
 
-export function OpenSearchDemo({ theme = 'light' }: { theme?: 'light' | 'dark' }) {
+export function OpenResearchDemo({ theme = 'light' }: { theme?: 'light' | 'dark' }) {
   const ledger = useMemo(makeLedger, [])
 
   async function script(a: Act<S>) {

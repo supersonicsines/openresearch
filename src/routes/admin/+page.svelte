@@ -7,7 +7,7 @@
 </script>
 
 <svelte:head>
-	<title>Admin · OpenSearch</title>
+	<title>Admin · OpenResearch</title>
 	<meta name="robots" content="noindex" />
 </svelte:head>
 

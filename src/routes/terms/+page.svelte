@@ -3,7 +3,7 @@
 	const contact = $derived(page.data.contactEmail as string);
 </script>
 
-<svelte:head><title>Terms · OpenSearch</title></svelte:head>
+<svelte:head><title>Terms · OpenResearch</title></svelte:head>
 
 <article class="page">
 	<h1 class="serif">Terms</h1>

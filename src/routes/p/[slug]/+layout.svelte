@@ -52,10 +52,10 @@
 	);
 	const sharePost = $derived(
 		justDonated
-			? `A donation of up to ${money(justDonated.amount)} has been pledged towards this research on OpenSearch.`
+			? `A donation of up to ${money(justDonated.amount)} has been pledged towards this research on OpenResearch.`
 			: project.spent > 0
-				? `${reference(project.id)} has raised ${money(project.spent)} on OpenSearch. It was submitted by @${project.author_handle}.`
-				: `${reference(project.id)} has been listed on OpenSearch by @${project.author_handle}, and it has not yet been funded.`
+				? `${reference(project.id)} has raised ${money(project.spent)} on OpenResearch. It was submitted by @${project.author_handle}.`
+				: `${reference(project.id)} has been listed on OpenResearch by @${project.author_handle}, and it has not yet been funded.`
 	);
 
 	const metaImage = $derived(
@@ -69,7 +69,7 @@
 </script>
 
 <svelte:head>
-	<title>{project.title} · OpenSearch</title>
+	<title>{project.title} · OpenResearch</title>
 	<meta name="description" content={metaDescription} />
 	<meta property="og:type" content="article" />
 	<meta property="og:title" content={project.title} />
@@ -188,7 +188,7 @@
 	cardUrl={shareCard}
 	shareUrl={shareLink}
 	postText={sharePost}
-	fileName="opensearch-{project.slug}.png"
+	fileName="openresearch-{project.slug}.png"
 />
 
 <style>

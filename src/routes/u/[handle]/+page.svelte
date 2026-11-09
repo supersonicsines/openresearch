@@ -11,14 +11,14 @@
 	let shareOpen = $state(false);
 	const own = $derived(page.data.user?.handle === data.person.handle);
 	const description = $derived(
-		`${money(data.stats.spent)} donated by @${data.person.handle} towards ${plural(data.stats.projects, 'project')} on OpenSearch.`
+		`${money(data.stats.spent)} donated by @${data.person.handle} towards ${plural(data.stats.projects, 'project')} on OpenResearch.`
 	);
 </script>
 
 <svelte:head>
-	<title>@{data.person.handle} · OpenSearch</title>
+	<title>@{data.person.handle} · OpenResearch</title>
 	<meta name="description" content={description} />
-	<meta property="og:title" content="@{data.person.handle} on OpenSearch" />
+	<meta property="og:title" content="@{data.person.handle} on OpenResearch" />
 	<meta property="og:description" content={description} />
 	<meta property="og:image" content="{page.url.origin}/card/donor/{data.person.handle}.png" />
 	<meta name="twitter:card" content="summary_large_image" />
@@ -75,8 +75,8 @@
 	title={`Share @${data.person.handle}`}
 	cardUrl="/card/donor/{data.person.handle}.png"
 	shareUrl="{page.url.origin}/u/{data.person.handle}"
-	postText={`Donations made by @${data.person.handle} towards open research on OpenSearch.`}
-	fileName="opensearch-{data.person.handle}.png"
+	postText={`Donations made by @${data.person.handle} towards research on OpenResearch.`}
+	fileName="openresearch-{data.person.handle}.png"
 />
 
 <style>

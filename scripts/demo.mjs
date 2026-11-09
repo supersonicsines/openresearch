@@ -199,7 +199,7 @@ async function seed() {
 	for (const [project, handle, dollars, model] of DONATIONS) {
 		await clients.get(handle).donate(slugs[project], dollars, model);
 	}
-	const db = new DatabaseSync(`${DATA_DIR}/opensearch.sqlite`);
+	const db = new DatabaseSync(`${DATA_DIR}/openresearch.sqlite`);
 	const open = () => db.prepare(`SELECT COUNT(*) AS n FROM donations WHERE status IN ('queued','running')`).get().n;
 	while (open() > 0) await new Promise((r) => setTimeout(r, 200));
 
@@ -230,7 +230,7 @@ function keepActive() {
 	const pick = (list) => list[Math.floor(Math.random() * list.length)];
 	const timer = setInterval(async () => {
 		try {
-			const db = new DatabaseSync(`${DATA_DIR}/opensearch.sqlite`, { readOnly: true });
+			const db = new DatabaseSync(`${DATA_DIR}/openresearch.sqlite`, { readOnly: true });
 			const slugs = db.prepare('SELECT slug FROM projects WHERE hidden_at IS NULL ORDER BY RANDOM() LIMIT 1').all();
 			const open = db.prepare(`SELECT COUNT(*) AS n FROM donations WHERE status IN ('queued','running')`).get().n;
 			db.close();
@@ -247,7 +247,7 @@ function keepActive() {
 }
 
 await waitForServer();
-const db = new DatabaseSync(`${DATA_DIR}/opensearch.sqlite`, { readOnly: true });
+const db = new DatabaseSync(`${DATA_DIR}/openresearch.sqlite`, { readOnly: true });
 const hasData = db.prepare('SELECT COUNT(*) AS n FROM projects').get().n > 0;
 db.close();
 if (!noSeed && !hasData) {

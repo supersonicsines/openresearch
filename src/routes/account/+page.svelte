@@ -41,7 +41,7 @@
 	}
 </script>
 
-<svelte:head><title>Account · OpenSearch</title></svelte:head>
+<svelte:head><title>Account · OpenResearch</title></svelte:head>
 
 <div class="page">
 	<h1 class="serif">Account</h1>

@@ -95,7 +95,7 @@ export function wholeMoney(micro: number): string {
 
 /** A project's short public reference, which is shorter than its title and stays the same. */
 export function reference(id: number): string {
-	return `OS-${String(id).padStart(4, '0')}`;
+	return `OR-${String(id).padStart(4, '0')}`;
 }
 
 const MILESTONES = [1, 5, 25, 100, 500, 2_500, 10_000, 50_000, 250_000].map((d) => d * 1_000_000);

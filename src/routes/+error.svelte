@@ -2,7 +2,7 @@
 	import { page } from '$app/state';
 </script>
 
-<svelte:head><title>{page.status === 404 ? 'Not found' : 'Error'} · OpenSearch</title></svelte:head>
+<svelte:head><title>{page.status === 404 ? 'Not found' : 'Error'} · OpenResearch</title></svelte:head>
 
 <div class="error-page">
 	<h1 class="serif">{page.status === 404 ? 'This page could not be found.' : 'This page could not be displayed.'}</h1>

@@ -319,12 +319,12 @@ test('files outside the repository cannot be reached', async ({ page, request })
 		`/git/${slug}.git/config`,
 		`/git/${slug}.git/hooks/pre-commit`,
 		`/git/${slug}.git/refs/heads/main`,
-		`/git/${slug}.git/..%2F..%2Fopensearch.sqlite`,
+		`/git/${slug}.git/..%2F..%2Fopenresearch.sqlite`,
 		`/git/..%2F..%2F.git/HEAD`,
-		`/git/${slug}.git/objects/..%2F..%2F..%2F..%2Fopensearch.sqlite`,
+		`/git/${slug}.git/objects/..%2F..%2F..%2F..%2Fopenresearch.sqlite`,
 		`/p/${slug}/files/.git/config`,
-		`/p/${slug}/files/..%2F..%2Fopensearch.sqlite`,
-		`/p/${slug}/files/%2e%2e/%2e%2e/opensearch.sqlite`,
+		`/p/${slug}/files/..%2F..%2Fopenresearch.sqlite`,
+		`/p/${slug}/files/%2e%2e/%2e%2e/openresearch.sqlite`,
 		`/p/${slug}/files/nothing.md`,
 		`/p/..%2F..%2F/archive.zip`
 	];

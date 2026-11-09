@@ -1,4 +1,4 @@
-# OpenSearch
+# OpenResearch
 
 A public board of research prompts. Any prompt of up to 250 words may be listed by anyone with an X
 account, and a public git repository is created for it. Research on that prompt is paid for by
@@ -71,11 +71,11 @@ have to be added again. `data-demo/` holds only sample data, and it may be delet
 
 ## The repository
 
-The code is kept at <https://github.com/supersonicsines/opensearch>, and is obtained with:
+The code is kept at <https://github.com/supersonicsines/openresearch>, and is obtained with:
 
 ```sh
-git clone https://github.com/supersonicsines/opensearch.git
-cd opensearch
+git clone https://github.com/supersonicsines/openresearch.git
+cd openresearch
 npm install
 ```
 

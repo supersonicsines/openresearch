@@ -3,7 +3,7 @@
 	let { data }: PageProps = $props();
 </script>
 
-<svelte:head><title>Sign-in · OpenSearch</title></svelte:head>
+<svelte:head><title>Sign-in · OpenResearch</title></svelte:head>
 
 <div class="page">
 	{#if data.reason === 'expired'}

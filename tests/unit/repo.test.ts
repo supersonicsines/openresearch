@@ -5,7 +5,7 @@ import { execFileSync } from 'node:child_process';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 
 let repo: typeof import('../../src/lib/server/repo.ts');
-const author = { name: '@tester', email: 'x@opensearch.invalid' };
+const author = { name: '@tester', email: 'x@openresearch.invalid' };
 
 beforeAll(async () => {
 	process.env.DATA_DIR = mkdtempSync(join(tmpdir(), 'os-repo-'));

@@ -1,4 +1,4 @@
-# Deploying OpenSearch
+# Deploying OpenResearch
 
 The site is one long-lived Node process with a SQLite file and a folder of git repositories on disk.
 It needs a machine or container with a **persistent disk**. Serverless hosting such as Vercel or
@@ -32,8 +32,8 @@ This step is the most likely to block a launch, and it can take time, so it shou
 ```sh
 curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
 sudo apt install -y nodejs git
-sudo useradd --system --create-home --home-dir /srv/opensearch opensearch
-sudo -iu opensearch git clone https://github.com/YOU/opensearch.git app
+sudo useradd --system --create-home --home-dir /srv/openresearch openresearch
+sudo -iu openresearch git clone https://github.com/YOU/openresearch.git app
 ```
 
 A private repository needs a deploy key or `gh auth login` for that user before it can be cloned.
@@ -41,7 +41,7 @@ A private repository needs a deploy key or `gh auth login` for that user before 
 ## 3. Configure and build
 
 ```sh
-sudo -iu opensearch
+sudo -iu openresearch
 cd app
 npm ci
 npm run setup      # creates .env with a new encryption key
@@ -74,16 +74,16 @@ An admin's handle is matched as text. If that handle is ever given up on X, it s
 
 ## 4. Keep it running
 
-`/etc/systemd/system/opensearch.service`:
+`/etc/systemd/system/openresearch.service`:
 
 ```ini
 [Unit]
-Description=OpenSearch
+Description=OpenResearch
 After=network-online.target
 
 [Service]
-User=opensearch
-WorkingDirectory=/srv/opensearch/app
+User=openresearch
+WorkingDirectory=/srv/openresearch/app
 Environment=NODE_ENV=production
 ExecStart=/usr/bin/node scripts/start.mjs
 Restart=always
@@ -96,8 +96,8 @@ WantedBy=multi-user.target
 ```
 
 ```sh
-sudo systemctl enable --now opensearch
-journalctl -u opensearch -f
+sudo systemctl enable --now openresearch
+journalctl -u openresearch -f
 ```
 
 ## 5. Provide HTTPS
@@ -128,9 +128,9 @@ The steps in [LAUNCH.md](LAUNCH.md) then cover a first real sign-in, prompt and 
 ## Docker
 
 ```sh
-docker build --build-arg ORIGIN=https://YOUR-DOMAIN -t opensearch .
-docker run -d --name opensearch --restart always -p 127.0.0.1:3000:3000 \
-  -v opensearch-data:/data --env-file .env opensearch
+docker build --build-arg ORIGIN=https://YOUR-DOMAIN -t openresearch .
+docker run -d --name openresearch --restart always -p 127.0.0.1:3000:3000 \
+  -v openresearch-data:/data --env-file .env openresearch
 ```
 
 `/data` must be a persistent volume. The `HOST` and `DATA_DIR` lines created by `npm run setup` must be
@@ -142,7 +142,7 @@ not been built or run, because Docker was not available on the machine it was wr
 ## Updating
 
 ```sh
-git pull && npm ci && npm run build && sudo systemctl restart opensearch
+git pull && npm ci && npm run build && sudo systemctl restart openresearch
 ```
 
 Database changes are applied automatically at startup. A run in progress at that moment is abandoned,
@@ -157,7 +157,7 @@ npm run backup                 # writes backups/<date>/, safe while the server i
 
 It should be scheduled and copied off the machine, for example with cron and rclone. `ENCRYPTION_KEY`
 is deliberately left out and should be stored separately. To restore, the server is stopped, the
-backup's `opensearch.sqlite` and `repos/` are placed in `DATA_DIR`, and the server is started.
+backup's `openresearch.sqlite` and `repos/` are placed in `DATA_DIR`, and the server is started.
 
 ## Operating it
 

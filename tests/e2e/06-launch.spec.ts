@@ -30,7 +30,7 @@ test('every prompt can be found on the full list, with the newest first', async 
 	await expect(rows.first()).toContainText('regeneration');
 	await expect(rows.nth(1)).toContainText('sleep patterns');
 	await expect(rows.first()).toContainText(`@${handle}`);
-	await expect(rows.first().locator('.c-ref')).toHaveText(/^OS-\d{4,}$/);
+	await expect(rows.first().locator('.c-ref')).toHaveText(/^OR-\d{4,}$/);
 
 	// A search keeps its place in the address, so that it can be shared or reloaded.
 	await page.getByLabel('Search prompts or handles').fill(marker);
@@ -86,7 +86,7 @@ test('the @handle is shown on the board, the project, and in the header', async 
 	const slug = await submitPrompt(page, 'Which species of tern travels the furthest in a single year?');
 
 	await expect(page.locator('.by').getByRole('link', { name: `@${handle}`, exact: true })).toBeVisible();
-	await expect(page.locator('.by .ref')).toHaveText(/^OS-\d+/);
+	await expect(page.locator('.by .ref')).toHaveText(/^OR-\d+/);
 
 	await page.goto('/?sort=recent');
 	const cell = page.locator('.board .slot').first();

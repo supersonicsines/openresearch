@@ -1,4 +1,4 @@
-# OpenSearch: handoff for the next agent
+# OpenResearch: handoff for the next agent
 
 Read this first. It holds what is not in the code: where the project stands, what the operator has
 decided, and how they expect work to be done. `README.md` describes the project, `docs/DEPLOY.md` covers
@@ -30,7 +30,7 @@ everything on such a drive. They are ignored by git and the test tools, and `fin
 
 Built and tested for a public launch, but **not yet deployed**.
 
-- The code is a public repository at https://github.com/supersonicsines/opensearch. Every commit is authored and committed as
+- The code is a public repository at https://github.com/supersonicsines/openresearch. Every commit is authored and committed as
   `supersonicsines <279517770+supersonicsines@users.noreply.github.com>`, set in the repository's own git config,
   with UTC dates and no trailers. Nothing in the files may point to a person: no real names, personal emails or
   absolute paths. `.env` and `data/` hold keys and must never be committed.
@@ -54,7 +54,8 @@ These were weighed and decided, so they should not be reopened unless the operat
   for launch. `MAX_PROMPTS_PER_HOUR=0` removes it, and the operator has been told about it.
 - **Output is text and HTML only**, and every prompt is a hosted git repository that can be cloned.
 - **X sign-in is required** to submit or donate.
-- The name also belongs to a well-known search engine project. The operator has been told.
+- **The name.** The project was renamed from OpenSearch to OpenResearch on 2026-11-09, to match its domain and
+  to avoid the OpenSearch trademark.
 
 ## Voice and look: these rules are firm
 
@@ -68,7 +69,7 @@ keep to this dose:
 
 - The list layout was called "too reddity", which led to the ruled grid leaderboard.
 - That was then "too academic", and "a BIT more crypto launchpad" was asked for, "still overall academic/nerdy".
-- It now has: IBM Plex Mono for every figure and @handle, `OS-0001` references, a live activity ticker, segmented
+- It now has: IBM Plex Mono for every figure and @handle, `OR-0001` references, a live activity ticker, segmented
   funding meters towards milestones, a dark graph-paper first place with a funding chart, and green for money and
   live states. "Raised" and "pledged" are the words for amounts, and "donated" is used for what a donor has given.
 - Source Serif prompts, italic old-style rank figures, and dry lines such as "$0.02 short of second place." and

@@ -59,7 +59,7 @@ test('the page can be used at 200% text size without losing the controls', async
 	await page.goto('/');
 	await page.addStyleTag({ content: 'html { font-size: 200%; }' });
 	await expect(page.getByRole('link', { name: 'Leaderboards' })).toBeVisible();
-	await expect(page.getByRole('link', { name: 'OpenSearch' })).toBeVisible();
+	await expect(page.getByRole('link', { name: 'OpenResearch' })).toBeVisible();
 });
 
 test('reduced motion is respected', async ({ page }) => {

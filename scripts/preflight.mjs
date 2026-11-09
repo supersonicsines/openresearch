@@ -103,7 +103,7 @@ try {
 const keyIndex = process.argv.indexOf('--key');
 const key = keyIndex > 0 ? process.argv[keyIndex + 1] : '';
 if (key) {
-	const auth = { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json', 'X-Title': 'OpenSearch preflight' };
+	const auth = { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json', 'X-Title': 'OpenResearch preflight' };
 	try {
 		const res = await fetch(`${OPENROUTER}/key`, { headers: auth, signal: AbortSignal.timeout(20_000) });
 		if (!res.ok) throw new Error(`status ${res.status}`);

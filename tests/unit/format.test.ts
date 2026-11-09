@@ -74,8 +74,8 @@ describe('format', () => {
 
 describe('references and milestones', () => {
 	it('gives each project a short reference', () => {
-		expect(reference(7)).toBe('OS-0007');
-		expect(reference(12345)).toBe('OS-12345');
+		expect(reference(7)).toBe('OR-0007');
+		expect(reference(12345)).toBe('OR-12345');
 	});
 	it('finds the next round figure above an amount', () => {
 		expect(milestone(0)).toBe(1_000_000);

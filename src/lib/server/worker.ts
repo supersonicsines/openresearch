@@ -468,7 +468,7 @@ Input-tokens: ${inputTokens}
 Output-tokens: ${outputTokens}
 Cost-usd: ${(cost / 1_000_000).toFixed(6)}
 `,
-		{ name: `@${donor.handle}`, email: `${donor.x_id}@x.opensearch.invalid` }
+		{ name: `@${donor.handle}`, email: `${donor.x_id}@x.openresearch.invalid` }
 	);
 
 	const sources: Source[] = research.sources;

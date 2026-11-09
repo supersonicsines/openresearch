@@ -131,7 +131,7 @@ const holder = globalThis as unknown as { __osDb?: DatabaseSync };
 
 function open(): DatabaseSync {
 	mkdirSync(config.dataDir, { recursive: true });
-	const db = new DatabaseSync(join(config.dataDir, 'opensearch.sqlite'));
+	const db = new DatabaseSync(join(config.dataDir, 'openresearch.sqlite'));
 	db.exec('PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 5000;');
 	const version = (db.prepare('PRAGMA user_version').get() as { user_version: number })
 		.user_version;

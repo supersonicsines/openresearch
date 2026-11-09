@@ -1,4 +1,4 @@
-# Contributing to OpenSearch
+# Contributing to OpenResearch
 
 Contributions are welcome. These notes describe how a change is proposed, checked and merged.
 

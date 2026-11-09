@@ -48,7 +48,7 @@
 	);
 </script>
 
-<svelte:head><title>Leaderboards · OpenSearch</title></svelte:head>
+<svelte:head><title>Leaderboards · OpenResearch</title></svelte:head>
 
 <div class="head">
 	<h1 class="serif">Leaderboards</h1>
@@ -111,8 +111,8 @@
 		title="Share these donations"
 		cardUrl="/card/donor/{data.me}.png"
 		shareUrl="{page.url.origin}/u/{data.me}"
-		postText="Donations made by @{data.me} towards open research on OpenSearch."
-		fileName="opensearch-{data.me}.png"
+		postText="Donations made by @{data.me} towards research on OpenResearch."
+		fileName="openresearch-{data.me}.png"
 	/>
 {/if}
 

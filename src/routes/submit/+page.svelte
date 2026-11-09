@@ -8,7 +8,7 @@
 
 	let { data, form }: PageProps = $props();
 
-	const DRAFT = 'opensearch.draft';
+	const DRAFT = 'openresearch.draft';
 	let prompt = $state('');
 	let busy = $state(false);
 	let box = $state<HTMLTextAreaElement>();
@@ -40,7 +40,7 @@
 	});
 </script>
 
-<svelte:head><title>Submit a prompt · OpenSearch</title></svelte:head>
+<svelte:head><title>Submit a prompt · OpenResearch</title></svelte:head>
 
 <div class="page">
 	<h1 class="serif">Submit a prompt</h1>

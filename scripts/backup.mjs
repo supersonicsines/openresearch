@@ -6,7 +6,7 @@ import { DatabaseSync } from 'node:sqlite';
 
 if (existsSync('.env')) process.loadEnvFile('.env');
 const dataDir = resolve(process.env.DATA_DIR || 'data');
-const source = join(dataDir, 'opensearch.sqlite');
+const source = join(dataDir, 'openresearch.sqlite');
 if (!existsSync(source)) {
 	console.error(`No database was found at ${source}.`);
 	process.exit(1);
@@ -16,7 +16,7 @@ const target = resolve(process.argv[2] || `backups/${stamp}`);
 mkdirSync(target, { recursive: true });
 
 const db = new DatabaseSync(source);
-db.exec(`VACUUM INTO '${join(target, 'opensearch.sqlite').replaceAll("'", "''")}'`);
+db.exec(`VACUUM INTO '${join(target, 'openresearch.sqlite').replaceAll("'", "''")}'`);
 db.close();
 if (existsSync(join(dataDir, 'repos'))) cpSync(join(dataDir, 'repos'), join(target, 'repos'), { recursive: true });
 console.log(`A backup has been written to ${target}.`);

@@ -18,7 +18,7 @@ const headers = (key?: string): Record<string, string> => ({
 	...(key ? { Authorization: `Bearer ${key}` } : {}),
 	'Content-Type': 'application/json',
 	'HTTP-Referer': process.env.ORIGIN || 'http://localhost:3000',
-	'X-Title': 'OpenSearch'
+	'X-Title': 'OpenResearch'
 });
 
 function retryAfter(res: Response): number | undefined {

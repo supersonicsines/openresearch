@@ -1,4 +1,4 @@
-# Rehearsal: OpenSearch demo
+# Rehearsal: OpenResearch demo
 
 Gold: `hero-demo` (kept the structure: named targets, a cursor gesture, a payoff that holds, a poster). Changed: the look is the site's own, there is no terminal, and the satellite is a leaderboard. The window dissolves at its foot, after `fade-crop`.
 
