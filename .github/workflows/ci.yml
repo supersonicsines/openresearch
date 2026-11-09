@@ -40,3 +40,25 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run test:e2e
+
+  # The image is built and run as a host would run it, with a volume at /data. PORT is changed, as
+  # Railway may change it, and the health check is run every 2 seconds so that it is seen to pass.
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: docker build --build-arg ORIGIN=http://localhost:3000 -t openresearch .
+      - name: The image starts and answers
+        run: |
+          docker volume create openresearch-data
+          docker run -d --name openresearch -e PORT=4000 -p 3000:4000 -v openresearch-data:/data --health-interval 2s openresearch
+          for i in $(seq 1 60); do
+            if curl -sf http://localhost:3000/healthz && [ "$(docker inspect --format '{{.State.Health.Status}}' openresearch)" = healthy ]; then exit 0; fi
+            sleep 1
+          done
+          docker logs openresearch; exit 1
+      - name: The image stops promptly when asked
+        run: |
+          docker stop --timeout 30 openresearch
+          docker logs openresearch
+          test "$(docker inspect --format '{{.State.ExitCode}}' openresearch)" = 0

@@ -9,7 +9,7 @@ generated for X.
 ![The board, with first place on a dark cell, a live activity feed, and a funding meter on every project](docs/demo.png)
 
 - **[CLAUDE.md](CLAUDE.md)**: where the project stands and how it is to be worked on, for the next agent or person.
-- **[docs/DEPLOY.md](docs/DEPLOY.md)**: putting it on a server, step by step.
+- **[docs/DEPLOY.md](docs/DEPLOY.md)**: putting it on a server, step by step, or on Railway.
 - **[docs/LAUNCH.md](docs/LAUNCH.md)**: the launch checklist, the first real run, and the risks that remain.
 - **[CONTRIBUTING.md](CONTRIBUTING.md)**: how a change is proposed, checked and merged. Security problems are reported as [SECURITY.md](SECURITY.md) says.
 
@@ -140,9 +140,11 @@ The browser tests use stand-ins for OpenRouter and X, and spend nothing. If Chro
 - Citations are not checked automatically. Findings are labelled as unreviewed.
 - The amount of a donation is enforced by this site, not by OpenRouter. The credit limit on a key is the
   only protection that does not depend on this site, which is why the warning is so prominent.
-- A run in progress when the server stops is abandoned. Its maximum cost stays counted against the
-  donation, because it may have been charged, and the donation resumes on restart. Figures on a
-  donor's account page can therefore run slightly above what OpenRouter actually charged.
+- When the server is asked to stop, no new run is started, and runs in progress are given up to 100
+  seconds to finish. A run that is cut off, or killed with the server, is abandoned. Its maximum cost
+  stays counted against the donation, because it may have been charged, and the donation resumes on
+  restart. Figures on a donor's account page can therefore run slightly above what OpenRouter actually
+  charged.
 - Leaderboards count only finished runs, at the cost OpenRouter reported.
 - There is one server process and one SQLite file, which is sufficient for a launch but is not redundant.
 

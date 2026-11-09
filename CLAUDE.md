@@ -2,14 +2,14 @@
 
 Read this first. It holds what is not in the code: where the project stands, what the operator has
 decided, and how they expect work to be done. `README.md` describes the project, `docs/DEPLOY.md` covers
-putting it on a server, and `docs/LAUNCH.md` is the launch checklist and the record of what has been tested.
+putting it on Railway or a server, and `docs/LAUNCH.md` is the launch checklist and the record of what has been tested.
 
 ## Spinning it up
 
 Node 22.17 or later and git are required. Nothing else, and no accounts, keys or money.
 
 ```sh
-npm install        # node_modules was left out of this folder, because it is specific to one machine
+npm install
 npm run demo       # the whole site at http://localhost:3000, with sample data; about two minutes the first time
 ```
 
@@ -23,9 +23,6 @@ npm run check      # types
 npm run qa:sweep   # reads every word on every page; the instructions are at the top of scripts/qa-sweep.mjs
 ```
 
-If the folder came from a USB drive, it should be copied off the drive first. macOS may add hidden `._` files beside
-everything on such a drive. They are ignored by git and the test tools, and `find . -name '._*' -delete` removes them.
-
 ## Where it stands
 
 Built and tested for a public launch, but **not yet deployed**.
@@ -38,11 +35,15 @@ Built and tested for a public launch, but **not yet deployed**.
   the code has been compared with the live documentation. The first real run is in `docs/LAUNCH.md`, and takes
   about ten minutes and a few cents with the operator's own key. No real key should be used without their say.
 - The next steps are all in `docs/LAUNCH.md`: set up the X app **with purchased credit** (the likeliest blocker),
-  choose a host, deploy, do the first real run, and fund a few prompts so that the board is not empty.
-- Hosting advice given: a fresh, small VPS with Caddy, following `docs/DEPLOY.md`. It should not share a machine
-  with anything else that holds keys or money, because this site stores other people's API keys. Railway is
-  workable, with one replica and a volume at `/data`, but the `Dockerfile` has never been built.
-- Not checked: a physical iPhone and desktop Safari (only the Safari engine), the `Dockerfile`, and a real HTTPS proxy.
+  deploy on Railway, do the first real run, and fund a few prompts so that the board is not empty.
+- Hosting: Railway, at https://openresearch.click, with one service built from the `Dockerfile`, one replica and a
+  volume at `/data`. The exact settings are in the Railway section of `docs/DEPLOY.md`, and the facts about Railway's
+  proxy behind them were measured on 9 November 2026. The `docker` job in CI builds the image, starts it with a
+  volume and waits for its health check. A small VPS with Caddy, as in the rest of `docs/DEPLOY.md`, is the
+  alternative. Either way, the host should hold nothing else with keys or money, because this site stores other
+  people's API keys.
+- Not checked: a physical iPhone and desktop Safari (only the Safari engine), and a deployment on Railway itself.
+  Docker was not available where this was written, so the image is built only by CI.
 
 ## Decisions the operator has made
 
@@ -103,5 +104,8 @@ keep to this dose:
 - **Browsers keep 404 and 410 responses** unless told otherwise, so pages send `private, no-cache`.
 - **The worker lives in the server process.** There must be one process, with a persistent disk, and never more than one
   replica. Serverless hosting will not work.
+- **Stopping.** At SIGTERM the worker starts nothing new, gives runs in progress up to 100 seconds to finish, closes the
+  live streams and exits. Whatever stops the process must wait longer than that: `RAILWAY_DEPLOYMENT_DRAINING_SECONDS=120`
+  on Railway, `TimeoutStopSec=120` under systemd, `--stop-timeout 120` with Docker.
 - **Long handles and long words:** anything that shows either needs `min-width: 0` and `overflow-wrap: anywhere` inside
   flex and grid rows, or one prompt can widen a whole page.

@@ -37,12 +37,13 @@ been spent and no real X sign-in has been made.
 ### Before going public
 
 - [ ] The terms and privacy pages have been read, and adjusted as needed. They are a sensible draft, not legal advice, and they name no company or jurisdiction.
-- [ ] A domain has been chosen and pointed at the server.
-- [ ] The X app is on Pay-per-use and Production, **with credit**, and the callback is registered ([DEPLOY.md](DEPLOY.md), step 1).
-- [ ] `.env` has `ADMIN_HANDLES` and `CONTACT_EMAIL`.
+- [ ] The Railway service is set up as [DEPLOY.md](DEPLOY.md#railway) describes, and the site answers at https://openresearch.click.
+- [ ] The generated `*.up.railway.app` domain has been removed.
+- [ ] The X app is on Pay-per-use and Production, **with credit** and auto-recharge off, and the callback is registered ([DEPLOY.md](DEPLOY.md), step 1).
+- [ ] `ADMIN_HANDLES` and `CONTACT_EMAIL` are set.
 - [ ] `ENCRYPTION_KEY` has been stored somewhere other than the server.
-- [ ] `npm run preflight` reports that nothing is blocking a launch.
-- [ ] Backups are scheduled.
+- [ ] `npm run preflight` reports that nothing is blocking a launch, or, on Railway, the deployment has started and its logs show no warnings.
+- [ ] Backups are scheduled: the volume's scheduled backups on Railway.
 
 ### The first real run: about ten minutes and a few cents
 
@@ -69,7 +70,7 @@ If a report is cut short on Sonnet, `MAX_RESEARCH_TOKENS` in `src/lib/budget.ts`
 ### The first hour
 
 - [ ] Three or four good prompts are funded first, so that the first visitor does not see an empty board.
-- [ ] `/admin` and `journalctl -u openresearch -f` are kept open.
+- [ ] `/admin` and the server's log are kept open: the deployment's logs on Railway, or `journalctl -u openresearch -f` under systemd.
 - [ ] To stop all spending at once: `MAX_ACTIVE_PROJECTS=0` and a restart.
 
 ## Risks that remain
