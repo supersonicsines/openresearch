@@ -36,8 +36,8 @@ const app = spawn('node', [`${BUILD_DIR}/index.js`], {
 		DEMO_MODE: '1',
 		ALLOW_DEV_SIGNIN: '1',
 		OPENROUTER_BASE_URL: `http://127.0.0.1:${MOCK_PORT}/api/v1`,
-		X_CLIENT_ID: '',
-		X_CLIENT_SECRET: '',
+		GITHUB_CLIENT_ID: '',
+		GITHUB_CLIENT_SECRET: '',
 		ENCRYPTION_KEY: '' // A key file is kept in data-demo/.
 	}
 });
@@ -139,46 +139,46 @@ class Client {
 }
 
 const PROMPTS = [
-	['j_whitlock', 'Which interventions have the strongest evidence for reducing antibiotic prescribing in general practice, and what do they cost per prescription avoided?'],
-	['sana_iqbal', 'What does the published evidence say about the effect of a four-day working week on productivity, and how many of those studies had a control group?'],
-	['h_ashworth', 'What has been learned from the first decade of offshore wind decommissioning, and who bears the cost when a developer fails?'],
-	['mira_kovacs', 'How reliable are wearable heart-rate monitors during high-intensity exercise, and which validation studies were independent of the manufacturer?'],
-	['t_oyelaran', 'How often are replication attempts in nutrition science published, and what proportion of them confirm the original finding?'],
-	['beatrix_lund', 'What is the current state of perovskite solar cell durability under real outdoor conditions, as opposed to accelerated laboratory ageing?'],
-	['r_castellano', 'Which ancient grain varieties have been shown to outperform modern wheat under drought, and is the evidence from field trials or from greenhouses?'],
-	['sana_iqbal', 'How much does a one-degree rise in classroom temperature reduce test performance, and has anyone measured the effect of air conditioning directly?'],
-	['j_whitlock', 'What do we know about the long-term cognitive effects of bilingual education, once the socio-economic background of the families is controlled for?'],
-	['h_ashworth', 'How well do air-source heat pumps perform in cold, damp climates such as that of northern England, and what do they cost to run in older homes compared with gas boilers?'],
-	['mira_kovacs', 'What is known about the effect of rotating shift patterns on sleep among hospital nurses, and which rota designs or other measures have been shown to reduce fatigue?'],
-	['t_oyelaran', 'How has water quality changed in English rivers over the last twenty years, and how much of the decline can be attributed to sewage discharge as opposed to agriculture?'],
-	['beatrix_lund', 'What has happened to public library use and funding in Britain since 2010, and what has helped to keep branches open?'],
-	['r_castellano', 'How much of the material in an electric vehicle battery can be recovered through recycling at present, and is second-life use a better option?']
+	['j-whitlock', 'Which interventions have the strongest evidence for reducing antibiotic prescribing in general practice, and what do they cost per prescription avoided?'],
+	['sana-iqbal', 'What does the published evidence say about the effect of a four-day working week on productivity, and how many of those studies had a control group?'],
+	['h-ashworth', 'What has been learned from the first decade of offshore wind decommissioning, and who bears the cost when a developer fails?'],
+	['mira-kovacs', 'How reliable are wearable heart-rate monitors during high-intensity exercise, and which validation studies were independent of the manufacturer?'],
+	['t-oyelaran', 'How often are replication attempts in nutrition science published, and what proportion of them confirm the original finding?'],
+	['beatrix-lund', 'What is the current state of perovskite solar cell durability under real outdoor conditions, as opposed to accelerated laboratory ageing?'],
+	['r-castellano', 'Which ancient grain varieties have been shown to outperform modern wheat under drought, and is the evidence from field trials or from greenhouses?'],
+	['sana-iqbal', 'How much does a one-degree rise in classroom temperature reduce test performance, and has anyone measured the effect of air conditioning directly?'],
+	['j-whitlock', 'What do we know about the long-term cognitive effects of bilingual education, once the socio-economic background of the families is controlled for?'],
+	['h-ashworth', 'How well do air-source heat pumps perform in cold, damp climates such as that of northern England, and what do they cost to run in older homes compared with gas boilers?'],
+	['mira-kovacs', 'What is known about the effect of rotating shift patterns on sleep among hospital nurses, and which rota designs or other measures have been shown to reduce fatigue?'],
+	['t-oyelaran', 'How has water quality changed in English rivers over the last twenty years, and how much of the decline can be attributed to sewage discharge as opposed to agriculture?'],
+	['beatrix-lund', 'What has happened to public library use and funding in Britain since 2010, and what has helped to keep branches open?'],
+	['r-castellano', 'How much of the material in an electric vehicle battery can be recovered through recycling at present, and is second-life use a better option?']
 ];
 
 const DONORS = [
-	['h_ashworth', 'sk-or-v1-capped-demo-a'],
-	['mira_kovacs', 'sk-or-v1-capped-demo-b'],
-	['t_oyelaran', 'sk-or-v1-capped-demo-c'],
-	['beatrix_lund', 'sk-or-v1-capped-demo-d'],
-	['r_castellano', 'sk-or-v1-capped-demo-e'],
-	['j_whitlock', 'sk-or-v1-capped-demo-f'],
-	['sana_iqbal', 'sk-or-v1-capped-demo-g']
+	['h-ashworth', 'sk-or-v1-capped-demo-a'],
+	['mira-kovacs', 'sk-or-v1-capped-demo-b'],
+	['t-oyelaran', 'sk-or-v1-capped-demo-c'],
+	['beatrix-lund', 'sk-or-v1-capped-demo-d'],
+	['r-castellano', 'sk-or-v1-capped-demo-e'],
+	['j-whitlock', 'sk-or-v1-capped-demo-f'],
+	['sana-iqbal', 'sk-or-v1-capped-demo-g']
 ];
 
 // Indexes into PROMPTS. Several prompts are left unfunded, as they would be on the real site.
 const DONATIONS = [
-	[9, 'j_whitlock', 1, 'anthropic/claude-opus-5.5'],
-	[9, 'sana_iqbal', 5, 'anthropic/claude-sonnet-5.5'],
-	[11, 'r_castellano', 5, 'anthropic/claude-sonnet-5.5'],
-	[11, 'j_whitlock', 0.5, 'anthropic/claude-haiku-5.5'],
-	[10, 'h_ashworth', 2, 'anthropic/claude-sonnet-5.5'],
-	[13, 'beatrix_lund', 2, 'google/gemini-3.8-flash'],
-	[13, 'sana_iqbal', 1, 'x-ai/grok-4.7'],
-	[12, 'mira_kovacs', 1, 'openai/gpt-5.6-luna-pro'],
-	[0, 'h_ashworth', 3, 'anthropic/claude-sonnet-5.5'],
-	[1, 'mira_kovacs', 1, 'anthropic/claude-haiku-5.5'],
-	[3, 't_oyelaran', 1, 'google/gemini-3.8-flash'],
-	[5, 'sana_iqbal', 2, 'anthropic/claude-sonnet-5.5']
+	[9, 'j-whitlock', 1, 'anthropic/claude-opus-5.5'],
+	[9, 'sana-iqbal', 5, 'anthropic/claude-sonnet-5.5'],
+	[11, 'r-castellano', 5, 'anthropic/claude-sonnet-5.5'],
+	[11, 'j-whitlock', 0.5, 'anthropic/claude-haiku-5.5'],
+	[10, 'h-ashworth', 2, 'anthropic/claude-sonnet-5.5'],
+	[13, 'beatrix-lund', 2, 'google/gemini-3.8-flash'],
+	[13, 'sana-iqbal', 1, 'x-ai/grok-4.7'],
+	[12, 'mira-kovacs', 1, 'openai/gpt-5.6-luna-pro'],
+	[0, 'h-ashworth', 3, 'anthropic/claude-sonnet-5.5'],
+	[1, 'mira-kovacs', 1, 'anthropic/claude-haiku-5.5'],
+	[3, 't-oyelaran', 1, 'google/gemini-3.8-flash'],
+	[5, 'sana-iqbal', 2, 'anthropic/claude-sonnet-5.5']
 ];
 
 /** How many days ago each of PROMPTS was submitted. */
@@ -225,7 +225,7 @@ async function seed() {
 // Something is always happening in the demonstration, so that the live parts of the page can be seen.
 function keepActive() {
 	const client = new Client();
-	const handles = ['j_whitlock', 'sana_iqbal', 'beatrix_lund', 'h_ashworth'];
+	const handles = ['j-whitlock', 'sana-iqbal', 'beatrix-lund', 'h-ashworth'];
 	const models = ['anthropic/claude-sonnet-5.5', 'anthropic/claude-haiku-5.5', 'google/gemini-3.8-flash'];
 	const pick = (list) => list[Math.floor(Math.random() * list.length)];
 	const timer = setInterval(async () => {

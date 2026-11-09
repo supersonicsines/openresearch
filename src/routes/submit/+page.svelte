@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { enhance } from '$app/forms';
 	import { connectHref } from '#lib/client.ts';
-	import XMark from '#lib/components/XMark.svelte';
+	import GitHubMark from '#lib/components/GitHubMark.svelte';
 	import { countWords, MAX_WORDS } from '#lib/prompt.ts';
 	import type { PageProps } from './$types';
 
@@ -87,14 +87,14 @@
 				</button>
 			{:else}
 				<a class="btn btn-primary" href={connectHref('/submit')} data-sveltekit-reload data-sveltekit-preload-data="false">
-					<XMark size={13} /> Connect X to submit
+					<GitHubMark size={13} /> Connect GitHub to submit
 				</a>
 			{/if}
 		</div>
 
 		{#if form?.message}<p class="error message" role="alert">{form.message}</p>{/if}
 		{#if over}<p class="error message" role="alert">The prompt must be reduced by {words - MAX_WORDS} {words - MAX_WORDS === 1 ? 'word' : 'words'}.</p>{/if}
-		{#if !data.user}<p class="small muted message">The prompt is kept on this device while the X account is connected.</p>{/if}
+		{#if !data.user}<p class="small muted message">The prompt is kept on this device while the GitHub account is connected.</p>{/if}
 	</form>
 </div>
 

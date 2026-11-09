@@ -13,10 +13,10 @@ export const actions: Actions = {
 		if (!devSigninAllowed(getClientAddress)) error(404, 'Not found');
 		const form = await request.formData();
 		const handle = String(form.get('handle') ?? '').trim().replace(/^@/, '');
-		if (!/^[A-Za-z0-9_]{1,15}$/.test(handle)) {
-			return fail(400, { message: 'A handle of up to 15 letters, numbers or underscores must be entered.', handle });
+		if (!/^[A-Za-z0-9_-]{1,39}$/.test(handle)) {
+			return fail(400, { message: 'A handle of up to 39 letters, numbers, hyphens or underscores must be entered.', handle });
 		}
-		const user = upsertUser({ xId: `dev-${handle.toLowerCase()}`, handle, name: handle, avatarUrl: null });
+		const user = upsertUser({ githubId: `dev-${handle.toLowerCase()}`, handle, name: handle, avatarUrl: null });
 		startSession(cookies, url, user.id);
 		redirect(303, safeNext(String(form.get('next') ?? '/')));
 	}

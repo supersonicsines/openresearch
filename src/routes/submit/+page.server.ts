@@ -35,7 +35,7 @@ const taken = (slug: string) =>
 
 export const actions: Actions = {
 	default: async ({ request, locals }) => {
-		if (!locals.user) return fail(401, { message: 'An X account must be connected first.', prompt: '' });
+		if (!locals.user) return fail(401, { message: 'A GitHub account must be connected first.', prompt: '' });
 		const form = await request.formData();
 		const raw = form.get('prompt');
 		const checked = checkPrompt(raw);
@@ -64,7 +64,7 @@ export const actions: Actions = {
 					'open-questions.md': '# Open questions\n\nNone are listed at present.\n'
 				},
 				`Prompt submitted by @${user.handle}`,
-				{ name: `@${user.handle}`, email: `${user.x_id}@x.openresearch.invalid` }
+				{ name: `@${user.handle}`, email: `${user.github_id}@github.openresearch.invalid` }
 			);
 			run(
 				`INSERT INTO projects (slug, title, prompt, author_id, created_at) VALUES (?, ?, ?, ?, ?)`,

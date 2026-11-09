@@ -9,15 +9,15 @@ const e = process.env;
 
 export const config = {
 	dataDir: resolve(e.DATA_DIR || 'data'),
-	xClientId: e.X_CLIENT_ID || '',
-	xClientSecret: e.X_CLIENT_SECRET || '',
+	githubClientId: e.GITHUB_CLIENT_ID || '',
+	githubClientSecret: e.GITHUB_CLIENT_SECRET || '',
 	encryptionKey: e.ENCRYPTION_KEY || '',
 	openRouterBase: (e.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1').replace(/\/$/, ''),
-	/** Sign-in without X, for local prototypes and tests only. Off unless it is asked for. */
+	/** Sign-in without GitHub, for local prototypes and tests only. Off unless it is asked for. */
 	allowDevSignin: e.ALLOW_DEV_SIGNIN === '1',
 	demoMode: e.DEMO_MODE === '1',
 	maxActiveProjects: Number(e.MAX_ACTIVE_PROJECTS ?? 16),
-	/** X handles allowed into /admin. Compared without regard to case. */
+	/** GitHub handles allowed into /admin. Compared without regard to case. */
 	adminHandles: (e.ADMIN_HANDLES || '')
 		.split(',')
 		.map((handle) => handle.trim().replace(/^@/, '').toLowerCase())
@@ -28,17 +28,17 @@ export const config = {
 	promptsPerHour: Number(e.MAX_PROMPTS_PER_HOUR ?? 20)
 };
 
-export const xConfigured = () => Boolean(config.xClientId);
+export const githubConfigured = () => Boolean(config.githubClientId);
 
 const LOOPBACK = new Set(['127.0.0.1', '::1', '::ffff:127.0.0.1']);
 
 /**
- * Prototype sign-in lets anyone claim any handle, so it needs two things: development mode with X
+ * Prototype sign-in lets anyone claim any handle, so it needs two things: development mode with GitHub
  * unconfigured, or an explicit ALLOW_DEV_SIGNIN=1; and a request that really comes from this machine.
  * The address is taken from the connection, since the URL's host is fixed at build time.
  */
 export function devSigninAllowed(clientAddress: () => string): boolean {
-	if (!config.allowDevSignin && !(isDev && !xConfigured())) return false;
+	if (!config.allowDevSignin && !(isDev && !githubConfigured())) return false;
 	try {
 		return LOOPBACK.has(clientAddress());
 	} catch {
@@ -95,8 +95,8 @@ export function startupReport(origin: string, env: Record<string, string | undef
 	if (env.OPENROUTER_BASE_URL && !env.OPENROUTER_BASE_URL.startsWith('https://openrouter.ai/')) {
 		problems.push('OPENROUTER_BASE_URL points away from OpenRouter, so donors\' keys would be sent elsewhere.');
 	}
-	if (env.X_AUTHORIZE_URL || env.X_API_BASE) problems.push('X_AUTHORIZE_URL and X_API_BASE are for tests only and must not be set.');
-	if (!env.X_CLIENT_ID || !env.X_CLIENT_SECRET) problems.push('X_CLIENT_ID and X_CLIENT_SECRET must be set, or nobody can sign in.');
+	if (env.GITHUB_WEB_BASE || env.GITHUB_API_BASE) problems.push('GITHUB_WEB_BASE and GITHUB_API_BASE are for tests only and must not be set.');
+	if (!env.GITHUB_CLIENT_ID || !env.GITHUB_CLIENT_SECRET) problems.push('GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET must be set, or nobody can sign in.');
 	const keyProblem = encryptionKeyProblem(env.ENCRYPTION_KEY);
 	if (keyProblem) problems.push(keyProblem);
 	// Behind a proxy with no header, either no limits apply, or every visitor shares one allowance.

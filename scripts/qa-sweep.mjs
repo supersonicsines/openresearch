@@ -30,7 +30,7 @@ function checkText(where, text) {
 		if (!/OpenResearch|OpenRouter|GitHub|DeepSeek/.test(around)) note('GLUED', where, JSON.stringify(around));
 	}
 	for (const m of text.matchAll(/\d[a-zA-Z]{3,}|[a-z]{2}\$\d|[a-z]@[a-zA-Z]/g)) note('GLUED', where, JSON.stringify(text.slice(Math.max(0, m.index - 14), m.index + 14)));
-	const clean = text.replace(/@[A-Za-z0-9_]+/g, ' ').replace(/https?:\S+/g, ' ').replace(/sk-or\S*/g, ' ').replace(/OR-\d+/g, ' ').replace(/[$+]?[\d,.]+[a-z%]{0,2}\b/g, ' ');
+	const clean = text.replace(/@[A-Za-z0-9_-]+/g, ' ').replace(/https?:\S+/g, ' ').replace(/sk-or\S*/g, ' ').replace(/OR-\d+/g, ' ').replace(/[$+]?[\d,.]+[a-z%]{0,2}\b/g, ' ');
 	for (const raw of clean.split(/[^A-Za-z'’-]+/)) {
 		const w = raw.toLowerCase().replace(/^['’-]+|['’-]+$/g, '').replace(/’/g, "'");
 		if (w.length < 2 || known.has(w)) continue;
@@ -95,7 +95,7 @@ const fresh = new URL(seed.page.url()).pathname.split('/')[2];
 await seed.page.evaluate(async (s) => { await fetch(`/api/projects/${s}/report`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ reason: 'A sample report, so that the admin page has something on it.' }) }); }, fresh);
 await seed.ctx.close();
 
-const PAGES = ['/', '/?sort=rising', '/?sort=recent', '/prompts', '/prompts?sort=donated', '/prompts?filter=live', '/prompts?filter=funded', '/prompts?filter=unfunded', '/prompts?q=heat', '/prompts?q=zzzzqqq', '/leaderboards', '/leaderboards?period=7', '/leaderboards?board=donors', '/leaderboards?board=donors&period=30', '/about', '/terms', '/privacy', '/submit', `/u/${'h_ashworth'}`, `/p/${top}`, `/p/${top}/runs`, `/p/${top}/runs/1`, `/p/${top}/repository`, `/p/${fresh}`, '/this-does-not-exist', '/p/nothing', '/auth/unavailable?reason=expired', '/auth/unavailable?reason=failed', '/auth/unavailable?reason=suspended', '/auth/unavailable'];
+const PAGES = ['/', '/?sort=rising', '/?sort=recent', '/prompts', '/prompts?sort=donated', '/prompts?filter=live', '/prompts?filter=funded', '/prompts?filter=unfunded', '/prompts?q=heat', '/prompts?q=zzzzqqq', '/leaderboards', '/leaderboards?period=7', '/leaderboards?board=donors', '/leaderboards?board=donors&period=30', '/about', '/terms', '/privacy', '/submit', `/u/${'h-ashworth'}`, `/p/${top}`, `/p/${top}/runs`, `/p/${top}/runs/1`, `/p/${top}/repository`, `/p/${fresh}`, '/this-does-not-exist', '/p/nothing', '/auth/unavailable?reason=expired', '/auth/unavailable?reason=failed', '/auth/unavailable?reason=suspended', '/auth/unavailable'];
 const PRIVATE = ['/account', '/admin', ...PAGES.slice(0, 4)];
 const titles = new Map();
 async function sweep(label, browser, handleName, pages, widths, scheme = 'light') {

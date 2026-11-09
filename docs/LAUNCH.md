@@ -2,8 +2,8 @@
 
 ## Tested, and how
 
-Everything here ran against stand-ins for OpenRouter and X, on a production build. No real money has
-been spent and no real X sign-in has been made.
+Everything here ran against stand-ins for OpenRouter and GitHub, on a production build. No real money has
+been spent and no real GitHub sign-in has been made.
 
 - **Every flow, in Chrome:** visiting, sorting, the full list and its search, filters and pages, the
   leaderboards, signing in, submitting, adding a key (rejected, with no limit, with a limit, replaced, removed),
@@ -39,7 +39,7 @@ been spent and no real X sign-in has been made.
 - [ ] The terms and privacy pages have been read, and adjusted as needed. They are a sensible draft, not legal advice, and they name no company or jurisdiction.
 - [ ] The Railway service is set up as [DEPLOY.md](DEPLOY.md#railway) describes, and the site answers at https://openresearch.click.
 - [ ] The generated `*.up.railway.app` domain has been removed.
-- [ ] The X app is on Pay-per-use and Production, **with credit** and auto-recharge off, and the callback is registered ([DEPLOY.md](DEPLOY.md), step 1).
+- [ ] The GitHub OAuth app is registered, and its callback is `https://YOUR-DOMAIN/auth/github/callback` ([DEPLOY.md](DEPLOY.md), step 1).
 - [ ] `ADMIN_HANDLES` and `CONTACT_EMAIL` are set.
 - [ ] `ENCRYPTION_KEY` has been stored somewhere other than the server.
 - [ ] `npm run preflight` reports that nothing is blocking a launch, or, on Railway, the deployment has started and its logs show no warnings.
@@ -50,7 +50,7 @@ been spent and no real X sign-in has been made.
 A **new OpenRouter key with a $2 limit** is used. These parts have never touched the real services.
 
 1. `npm run preflight -- --key sk-or-v1-...` is run. It makes one real request with web search, for about a cent.
-2. X is connected on the live site. The @handle should appear in the header, with the real avatar.
+2. GitHub is connected on the live site. The @handle should appear in the header, with the real avatar.
 3. `/admin` should appear in the navigation.
 4. A real prompt is submitted.
 5. The key is added, and **$0.25 on a cheap model** is donated (Claude Haiku or DeepSeek Flash).
@@ -116,7 +116,7 @@ Also fixed while walking the flows:
 
 Left as they are, knowingly:
 
-- An admin is matched by @handle. If that handle were given up on X and registered by someone else, they would
+- An admin is matched by @handle. If that handle were given up on GitHub and registered by someone else, they would
   gain `/admin`. The handle should be removed from `ADMIN_HANDLES` before it is ever changed.
 - `npm audit` reports a low advisory in `deepmerge`, which has no fixed version. It is used only while the site is
   built, by the Svelte plugin to merge the project's own configuration, and it is not in the built site. The `fflate`
@@ -143,7 +143,7 @@ Fixed:
 
 Checked and found to match: the key endpoint, the model list and its fields, all seven suggested models,
 the cost of web search, the cost in the final stream chunk, the forms of stream errors and keep-alives,
-the X sign-in addresses and scopes, and the size and format of the cards.
+the GitHub sign-in addresses, and the size and format of the cards.
 
-Could not be established without a real account: what X returns with no credit, and whether sources
+Could not be established without a real account: whether sources
 arrive in the stream in the form documented. The code accepts both documented forms.

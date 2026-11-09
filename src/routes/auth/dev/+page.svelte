@@ -9,7 +9,7 @@
 
 <div class="page">
 	<h1 class="serif">Test sign-in</h1>
-	<p class="muted">X has not been configured on this machine, so a handle may be entered in its place. This page is available only on this machine.</p>
+	<p class="muted">GitHub has not been configured on this machine, so a handle may be entered in its place. This page is available only on this machine.</p>
 	<form method="POST" use:enhance>
 		<input type="hidden" name="next" value={data.next} />
 		<label class="label" for="handle">Handle</label>

@@ -12,7 +12,7 @@ test('the demo plays on the About page without errors or policy violations', asy
 	await expect(stage.locator('.osd-dialog[data-show]')).toBeAttached({ timeout: 10_000 });
 	await expect(stage.locator('.ss-states__item[data-on]')).toHaveText('The report is being written.', { timeout: 15_000 });
 	// The story reaches its payoff: the donor overtakes the one above.
-	const donor = stage.locator('.osd-rank', { hasText: '@h_ashworth' });
+	const donor = stage.locator('.osd-rank', { hasText: '@h-ashworth' });
 	await expect(donor).toHaveAttribute('style', /translateY\(44px\)/, { timeout: 20_000 });
 	await expect(page.getByRole('img', { name: /An illustration of the site in use/ })).toBeVisible();
 	expect(problems).toEqual([]);
@@ -45,7 +45,7 @@ test('under reduced motion the demo holds its complete still', async ({ page }) 
 	const stage = page.locator('.ss-stage');
 	const status = stage.locator('.ss-states__item[data-on]');
 	await expect(status).toHaveText('The findings are being updated.');
-	await expect(stage.locator('.osd-rank', { hasText: '@h_ashworth' })).toHaveAttribute('style', /translateY\(44px\)/);
+	await expect(stage.locator('.osd-rank', { hasText: '@h-ashworth' })).toHaveAttribute('style', /translateY\(44px\)/);
 	await page.waitForTimeout(2500);
 	await expect(status).toHaveText('The findings are being updated.');
 	await expect(stage.locator('.osd-dialog[data-show]')).toHaveCount(0);

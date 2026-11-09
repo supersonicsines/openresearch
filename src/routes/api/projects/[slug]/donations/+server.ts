@@ -17,7 +17,7 @@ const MAX_OPEN_DONATIONS = 3;
 const MAX_DONATION_MICRO = 100_000 * 1_000_000;
 
 export const POST: RequestHandler = async ({ request, params, locals }) => {
-	if (!locals.user) return reply(401, 'An X account must be connected first.');
+	if (!locals.user) return reply(401, 'A GitHub account must be connected first.');
 	const project = get<{ id: number }>('SELECT id FROM projects WHERE slug = ? AND hidden_at IS NULL', params.slug);
 	if (!project) return reply(404, 'This project could not be found.');
 	if (hit(`donate:${locals.user.id}`, 60, HOUR)) {

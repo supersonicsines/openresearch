@@ -346,7 +346,7 @@ test('return addresses cannot lead to another site', async ({ page, request }) =
 		expect(new URL(page.url()).hostname).toBe('localhost');
 		await page.context().clearCookies();
 	}
-	const res = await request.get('/auth/x?next=https://evil.example/', { maxRedirects: 0 });
+	const res = await request.get('/auth/github?next=https://evil.example/', { maxRedirects: 0 });
 	expect(res.headers().location).not.toContain('https://evil.example');
 });
 

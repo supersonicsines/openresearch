@@ -1,6 +1,6 @@
 # OpenResearch
 
-A public board of research prompts. Any prompt of up to 250 words may be listed by anyone with an X
+A public board of research prompts. Any prompt of up to 250 words may be listed by anyone with a GitHub
 account, and a public git repository is created for it. Research on that prompt is paid for by
 whoever chooses to donate from their own OpenRouter key. Every run is committed to the repository as
 text and as HTML. Projects and donors are ranked on two leaderboards, and shareable cards can be
@@ -39,10 +39,9 @@ npm run preflight  # checks the configuration, and spends nothing
 npm start          # production server, on the port in PORT
 ```
 
-An X app is needed for sign-in, and [docs/DEPLOY.md](docs/DEPLOY.md) gives the steps. It must have
-credit, because X refuses requests from an app without any. For a local test against real X, X's
-documentation asks for `127.0.0.1` rather than `localhost`, so `ORIGIN` is set to
-`http://127.0.0.1:3000` and `http://127.0.0.1:3000/auth/x/callback` is registered.
+A GitHub OAuth app is needed for sign-in, and [docs/DEPLOY.md](docs/DEPLOY.md) gives the steps. It is free.
+For a local test against real GitHub, a second OAuth app is registered with `http://localhost:3000/auth/github/callback`
+as its callback.
 
 The site must run as a single long-lived process with a persistent disk, because the runs are carried
 out by a worker inside it. Serverless hosting will not work.
@@ -126,13 +125,13 @@ npm run check       # types
 npm run qa:sweep    # reads every word on every page; the instructions are at the top of scripts/qa-sweep.mjs
 ```
 
-The browser tests use stand-ins for OpenRouter and X, and spend nothing. If Chrome is not installed,
+The browser tests use stand-ins for OpenRouter and GitHub, and spend nothing. If Chrome is not installed,
 `npx playwright install chromium` is run and `PW_CHANNEL=` is set to an empty value.
 `scripts/mock-openrouter.mjs` lists the failures that the stand-in can produce.
 
 ## Known limits
 
-- The site has not yet been run against real OpenRouter inference or real X sign-in, only against
+- The site has not yet been run against real OpenRouter inference or real GitHub sign-in, only against
   stand-ins and a comparison with the live documentation. [docs/LAUNCH.md](docs/LAUNCH.md) gives the
   first real run, which takes about ten minutes.
 - Prompts are not reviewed in advance, and everything generated is published under the site's name.

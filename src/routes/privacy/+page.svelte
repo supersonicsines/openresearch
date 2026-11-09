@@ -10,7 +10,7 @@
 	<div class="prose">
 		<h2>What is kept</h2>
 		<ul>
-			<li><strong>The X account.</strong> Its numeric id, handle, display name and profile picture address, taken when it is connected. No X access token is kept, and nothing can be posted on the account's behalf.</li>
+			<li><strong>The GitHub account.</strong> Its numeric id, handle, display name and profile picture address, taken when it is connected. No GitHub access token is kept, and nothing can be read beyond the public profile or done on the account's behalf.</li>
 			<li><strong>The OpenRouter key.</strong> Encrypted with AES-256-GCM, and only ever sent to OpenRouter. It can be removed at any time from the account page, and it is deleted when that is done.</li>
 			<li><strong>Activity.</strong> Prompts, donations, reports and the runs that result from them.</li>
 			<li><strong>A session cookie.</strong> One cookie, which keeps an account signed in for up to 30 days. There is no advertising or analytics.</li>
@@ -18,10 +18,10 @@
 		</ul>
 
 		<h2>What is public</h2>
-		<p>Prompts, findings, the @handle of whoever submitted or funded them, amounts, models and dates are all public. They are committed to public git repositories. The commit for each run records the donor's @handle and numeric X account id, and the first commit in a repository records those of whoever submitted the prompt. The id is part of the commit's author address, in the form <code>1234567@x.openresearch.invalid</code>, which cannot receive mail. Copies may be made by anyone, so a removal from this site cannot reach them.</p>
+		<p>Prompts, findings, the @handle of whoever submitted or funded them, amounts, models and dates are all public. They are committed to public git repositories. The commit for each run records the donor's @handle and numeric GitHub account id, and the first commit in a repository records those of whoever submitted the prompt. The id is part of the commit's author address, in the form <code>1234567@github.openresearch.invalid</code>, which cannot receive mail. Copies may be made by anyone, so a removal from this site cannot reach them.</p>
 
 		<h2>Who else receives it</h2>
-		<p>Prompts and search queries are sent to OpenRouter and to whichever model and search providers it routes to, using the donor's key. Sign-in goes through X. Each of them acts under its own privacy policy. Nothing is sold.</p>
+		<p>Prompts and search queries are sent to OpenRouter and to whichever model and search providers it routes to, using the donor's key. Sign-in goes through GitHub. Each of them acts under its own privacy policy. Nothing is sold.</p>
 
 		<h2>Deletion</h2>
 		{#if contact}

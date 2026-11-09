@@ -111,7 +111,7 @@
 		title="Share these donations"
 		cardUrl="/card/donor/{data.me}.png"
 		shareUrl="{page.url.origin}/u/{data.me}"
-		postText="Donations made by @{data.me} towards research on OpenResearch."
+		postText="Donations made towards research on OpenResearch."
 		fileName="openresearch-{data.me}.png"
 	/>
 {/if}

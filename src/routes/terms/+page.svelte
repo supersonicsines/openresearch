@@ -8,7 +8,7 @@
 <article class="page">
 	<h1 class="serif">Terms</h1>
 	<div class="prose">
-		<p>These terms apply to anyone who uses this site. By connecting an X account, submitting a prompt or making a donation, they are accepted.</p>
+		<p>These terms apply to anyone who uses this site. By connecting a GitHub account, submitting a prompt or making a donation, they are accepted.</p>
 
 		<h2>The service</h2>
 		<p>Research prompts are published here, and AI models are run on them using credit donated from OpenRouter keys. The site is provided as it is, without any warranty. It may be changed, interrupted or withdrawn at any time, and it should not be relied upon to hold anything that is not kept elsewhere.</p>

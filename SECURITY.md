@@ -17,6 +17,6 @@ acknowledged, and the reporter will be told when it has been fixed.
 
 ## Out of scope
 
-- OpenRouter and X themselves, which should be reported to them.
+- OpenRouter and GitHub themselves, which should be reported to them.
 - Attacks that need the server's `.env` or the machine itself.
 - Prompts that are merely offensive. These are reported on the site, and removed from `/admin`.

@@ -1,4 +1,4 @@
-// These tests run their own copy of the server, so that it can be configured for X and killed.
+// These tests run their own copy of the server, so that it can be configured for GitHub and killed.
 import { expect, test } from '@playwright/test';
 import { execFileSync, spawn, type ChildProcess } from 'node:child_process';
 import { createHash, randomBytes } from 'node:crypto';
@@ -9,7 +9,7 @@ import { DatabaseSync } from 'node:sqlite';
 
 const PORT = 4174;
 const ORIGIN = `http://localhost:${PORT}`;
-const MOCK_X = 4175;
+const MOCK_GITHUB = 4175;
 const MOCK_OR = 8797;
 const DATA = 'data-e2e-server';
 const CLIENT = 'test-client-id';
@@ -19,7 +19,7 @@ test.describe.configure({ mode: 'serial' });
 
 let mockOr: ChildProcess;
 let app: ChildProcess;
-let xServer: Server;
+let githubServer: Server;
 const challenges = new Map<string, string>();
 let tokenCalls = 0;
 
@@ -31,10 +31,10 @@ function startApp(extra: Record<string, string> = {}) {
 			PORT: String(PORT),
 			DATA_DIR: DATA,
 			OPENROUTER_BASE_URL: `http://127.0.0.1:${MOCK_OR}/api/v1`,
-			X_CLIENT_ID: CLIENT,
-			X_CLIENT_SECRET: SECRET,
-			X_AUTHORIZE_URL: `http://localhost:${MOCK_X}/i/oauth2/authorize`,
-			X_API_BASE: `http://localhost:${MOCK_X}`,
+			GITHUB_CLIENT_ID: CLIENT,
+			GITHUB_CLIENT_SECRET: SECRET,
+			GITHUB_WEB_BASE: `http://localhost:${MOCK_GITHUB}`,
+			GITHUB_API_BASE: `http://localhost:${MOCK_GITHUB}`,
 			ENCRYPTION_KEY: Buffer.alloc(32, 3).toString('base64'),
 			ALLOW_DEV_SIGNIN: '',
 			DEMO_MODE: '',
@@ -73,45 +73,44 @@ test.beforeAll(async () => {
 	execFileSync('node', ['scripts/build.mjs'], { stdio: 'ignore', env: { ...process.env, ORIGIN, BUILD_DIR: 'build-e2e-server' } });
 	mockOr = spawn('node', ['scripts/mock-openrouter.mjs'], { stdio: 'ignore', env: { ...process.env, MOCK_PORT: String(MOCK_OR), MOCK_QUIET: '1', MOCK_DELAY: '40' } });
 
-	// A stand-in for X. It checks PKCE and the client's credentials as X does.
-	xServer = createServer(async (req, res) => {
-		const url = new URL(req.url!, `http://localhost:${MOCK_X}`);
-		if (url.pathname === '/i/oauth2/authorize') {
+	// A stand-in for GitHub. It checks PKCE and the client's credentials as GitHub does, and refuses a code as GitHub does.
+	githubServer = createServer(async (req, res) => {
+		const url = new URL(req.url!, `http://localhost:${MOCK_GITHUB}`);
+		if (url.pathname === '/login/oauth/authorize') {
 			expect(url.searchParams.get('client_id')).toBe(CLIENT);
-			expect(url.searchParams.get('response_type')).toBe('code');
 			expect(url.searchParams.get('code_challenge_method')).toBe('S256');
-			expect(url.searchParams.get('scope')).toBe('tweet.read users.read');
+			expect(url.searchParams.get('scope')).toBeNull();
 			const code = randomBytes(8).toString('hex');
 			challenges.set(code, url.searchParams.get('code_challenge')!);
 			const back = new URL(url.searchParams.get('redirect_uri')!);
 			back.searchParams.set('code', code);
 			back.searchParams.set('state', url.searchParams.get('state')!);
 			res.writeHead(302, { Location: back.toString() }).end();
-		} else if (url.pathname === '/2/oauth2/token') {
+		} else if (url.pathname === '/login/oauth/access_token') {
 			tokenCalls++;
 			let raw = '';
 			for await (const chunk of req) raw += chunk;
 			const body = new URLSearchParams(raw);
-			const expected = `Basic ${Buffer.from(`${CLIENT}:${SECRET}`).toString('base64')}`;
 			const challenge = challenges.get(body.get('code') ?? '');
 			const computed = createHash('sha256').update(body.get('code_verifier') ?? '').digest('base64url');
-			if (req.headers.authorization !== expected || !challenge || challenge !== computed || body.get('grant_type') !== 'authorization_code') {
-				res.writeHead(400).end('{"error":"invalid_request"}');
+			const json = { 'Content-Type': 'application/json' };
+			if (req.headers.accept !== 'application/json' || body.get('client_id') !== CLIENT || body.get('client_secret') !== SECRET || !challenge || challenge !== computed) {
+				res.writeHead(200, json).end('{"error":"bad_verification_code"}');
 				return;
 			}
-			res.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify({ access_token: 'token-abc', token_type: 'bearer' }));
-		} else if (url.pathname === '/2/users/me') {
-			if (req.headers.authorization !== 'Bearer token-abc') {
+			res.writeHead(200, json).end(JSON.stringify({ access_token: 'token-abc', token_type: 'bearer', scope: '' }));
+		} else if (url.pathname === '/user') {
+			if (req.headers.authorization !== 'Bearer token-abc' || !req.headers['user-agent']) {
 				res.writeHead(401).end();
 				return;
 			}
 			res.writeHead(200, { 'Content-Type': 'application/json' }).end(
-				JSON.stringify({ data: { id: '1234567', username: 'real_person', name: 'A Real Person', profile_image_url: 'https://pbs.twimg.com/profile_images/1/a_normal.jpg' } })
+				JSON.stringify({ id: 1234567, login: 'real-person', name: 'A Real Person', avatar_url: 'https://avatars.githubusercontent.com/u/1234567?v=4' })
 			);
 		} else {
 			res.writeHead(404).end();
 		}
-	}).listen(MOCK_X);
+	}).listen(MOCK_GITHUB);
 
 	startApp();
 	await waitUp();
@@ -120,19 +119,19 @@ test.beforeAll(async () => {
 test.afterAll(() => {
 	app?.kill('SIGKILL');
 	mockOr?.kill('SIGKILL');
-	xServer?.close();
+	githubServer?.close();
 	rmSync(DATA, { recursive: true, force: true });
 });
 
-test('signing in with X works from start to finish, and no token is kept', async ({ page }) => {
+test('signing in with GitHub works from start to finish, and no token is kept', async ({ page }) => {
 	await page.goto(`${ORIGIN}/submit`);
-	await page.getByRole('link', { name: 'Connect X to submit' }).click();
+	await page.getByRole('link', { name: 'Connect GitHub to submit' }).click();
 	await page.waitForURL(`${ORIGIN}/submit`);
 	await expect(page.getByRole('button', { name: 'Submit prompt' })).toBeVisible();
 	expect(tokenCalls).toBe(1);
 	await page.goto(`${ORIGIN}/account`);
 	await expect(page.getByText('A Real Person')).toBeVisible();
-	await expect(page.getByRole('link', { name: '@real_person', exact: true })).toBeVisible();
+	await expect(page.getByRole('link', { name: '@real-person', exact: true })).toBeVisible();
 	const cookies = await page.context().cookies();
 	const session = cookies.find((c) => c.name === 'os_session');
 	expect(session?.httpOnly).toBe(true);
@@ -144,12 +143,24 @@ test('signing in with X works from start to finish, and no token is kept', async
 
 test('a forged or stale callback is turned away', async ({ page, context }) => {
 	await context.clearCookies();
-	await page.goto(`${ORIGIN}/auth/x/callback?code=abc&state=forged`);
+	await page.goto(`${ORIGIN}/auth/github/callback?code=abc&state=forged`);
 	await expect(page.getByRole('heading', { level: 1 })).toHaveText('The sign-in request has expired.');
-	await expect(page.getByRole('link', { name: 'Connect X' }).first()).toBeVisible();
+	await expect(page.getByRole('link', { name: 'Connect GitHub' }).first()).toBeVisible();
 });
 
-test('prototype sign-in is unavailable once X is configured', async ({ request }) => {
+test('declining on GitHub, or a code GitHub refuses, says that the account could not be connected', async ({ page }) => {
+	const failed = page.getByRole('heading', { name: 'The GitHub account could not be connected.' });
+	await page.goto(`${ORIGIN}/auth/github/callback?error=access_denied&state=x`);
+	await expect(failed).toBeVisible();
+
+	// The sign-in is started but not followed, so that the site can be handed a code GitHub has never issued.
+	const start = await page.request.get(`${ORIGIN}/auth/github?next=/`, { maxRedirects: 0 });
+	const state = new URL(start.headers().location).searchParams.get('state');
+	await page.goto(`${ORIGIN}/auth/github/callback?code=never-issued&state=${state}`);
+	await expect(failed).toBeVisible();
+});
+
+test('prototype sign-in is unavailable once GitHub is configured', async ({ request }) => {
 	expect((await request.get(`${ORIGIN}/auth/dev`)).status()).toBe(404);
 	const res = await request.post(`${ORIGIN}/auth/dev`, {
 		headers: { Origin: ORIGIN, 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'text/html' },
@@ -158,13 +169,13 @@ test('prototype sign-in is unavailable once X is configured', async ({ request }
 	expect(res.status()).toBe(404);
 });
 
-test('with X unconfigured, a production server offers no sign-in at all', async ({ request }) => {
+test('with GitHub unconfigured, a production server offers no sign-in at all', async ({ request }) => {
 	app.kill('SIGKILL');
 	await new Promise((r) => setTimeout(r, 300));
-	startApp({ X_CLIENT_ID: '', X_CLIENT_SECRET: '' });
+	startApp({ GITHUB_CLIENT_ID: '', GITHUB_CLIENT_SECRET: '' });
 	await waitUp();
 	expect((await request.get(`${ORIGIN}/auth/dev`)).status()).toBe(404);
-	const res = await request.get(`${ORIGIN}/auth/x?next=/`, { maxRedirects: 0 });
+	const res = await request.get(`${ORIGIN}/auth/github?next=/`, { maxRedirects: 0 });
 	expect(res.headers().location).toBe('/auth/unavailable');
 	app.kill('SIGKILL');
 	await new Promise((r) => setTimeout(r, 300));
@@ -173,7 +184,7 @@ test('with X unconfigured, a production server offers no sign-in at all', async 
 test('prototype sign-in refuses connections from other machines, even when enabled', async ({ request }) => {
 	const lan = Object.values(networkInterfaces()).flat().find((i) => i && i.family === 'IPv4' && !i.internal)?.address;
 	test.skip(!lan, 'This machine has no network address to test from.');
-	startApp({ X_CLIENT_ID: '', X_CLIENT_SECRET: '', ALLOW_DEV_SIGNIN: '1', HOST: '0.0.0.0' });
+	startApp({ GITHUB_CLIENT_ID: '', GITHUB_CLIENT_SECRET: '', ALLOW_DEV_SIGNIN: '1', HOST: '0.0.0.0' });
 	await waitUp();
 	expect((await request.get(`http://${lan}:${PORT}/auth/dev`)).status()).toBe(404);
 	const forged = await request.post(`http://${lan}:${PORT}/auth/dev`, {
@@ -189,7 +200,7 @@ test('prototype sign-in refuses connections from other machines, even when enabl
 });
 
 test('a crash cannot spend more than was donated', async ({ page }) => {
-	await page.goto(`${ORIGIN}/auth/x?next=/`);
+	await page.goto(`${ORIGIN}/auth/github?next=/`);
 	await page.waitForURL(`${ORIGIN}/`);
 	await page.evaluate(async () => {
 		await fetch('/api/key', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: 'sk-or-v1-capped-crash', acknowledged: true }) });
@@ -224,7 +235,7 @@ test('a crash cannot spend more than was donated', async ({ page }) => {
 });
 
 test('work is resumed after the server is killed part way through a run', async ({ page }) => {
-	await page.goto(`${ORIGIN}/auth/x?next=/`);
+	await page.goto(`${ORIGIN}/auth/github?next=/`);
 	await page.waitForURL(`${ORIGIN}/`);
 	const status = await page.evaluate(async () => {
 		const res = await fetch('/api/key', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: 'sk-or-v1-capped-restart', acknowledged: true }) });
@@ -275,7 +286,7 @@ function query<T>(sql: string, ...params: (string | number)[]): T {
 
 test('a run in progress is finished when the server is asked to stop, and no further run is started', async ({ page }) => {
 	// The key added in the test before is used again.
-	await page.goto(`${ORIGIN}/auth/x?next=/`);
+	await page.goto(`${ORIGIN}/auth/github?next=/`);
 	await page.waitForURL(`${ORIGIN}/`);
 	await page.goto(`${ORIGIN}/submit`);
 	await page.getByLabel('Prompt').fill('How well do heat pumps work? A prompt for a server that is asked to stop.');
@@ -314,7 +325,7 @@ test('a run in progress is finished when the server is asked to stop, and no fur
 });
 
 test('a stored key still works after a restart', async ({ page }) => {
-	await page.goto(`${ORIGIN}/auth/x?next=/account`);
+	await page.goto(`${ORIGIN}/auth/github?next=/account`);
 	await page.waitForURL(`${ORIGIN}/account`);
 	await expect(page.getByText('sk-or-…tart')).toBeVisible();
 });
@@ -345,7 +356,7 @@ test('limits apply per visitor, and flooding is refused with a clear message', a
 
 	// The third prompt in an hour is refused, and the text is kept for the person to use later.
 	await page.setExtraHTTPHeaders({ 'x-test-address': '10.0.0.4' });
-	await page.goto(`${ORIGIN}/auth/x?next=/submit`);
+	await page.goto(`${ORIGIN}/auth/github?next=/submit`);
 	await page.waitForURL(`${ORIGIN}/submit`);
 	for (const n of [1, 2]) {
 		await page.goto(`${ORIGIN}/submit`);

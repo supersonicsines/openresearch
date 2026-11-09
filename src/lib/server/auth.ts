@@ -13,26 +13,26 @@ const cookieOptions = (url: URL) => ({
 });
 
 export function upsertUser(input: {
-	xId: string;
+	githubId: string;
 	handle: string;
 	name: string;
 	avatarUrl: string | null;
 }): User {
 	const now = Date.now();
 	run(
-		`INSERT INTO users (x_id, handle, handle_lower, name, avatar_url, created_at)
+		`INSERT INTO users (github_id, handle, handle_lower, name, avatar_url, created_at)
 		VALUES (?, ?, ?, ?, ?, ?)
-		ON CONFLICT (x_id) DO UPDATE SET
+		ON CONFLICT (github_id) DO UPDATE SET
 			handle = excluded.handle, handle_lower = excluded.handle_lower,
 			name = excluded.name, avatar_url = excluded.avatar_url`,
-		input.xId,
+		input.githubId,
 		input.handle,
 		input.handle.toLowerCase(),
 		input.name,
 		input.avatarUrl,
 		now
 	);
-	return get<User>('SELECT * FROM users WHERE x_id = ?', input.xId)!;
+	return get<User>('SELECT * FROM users WHERE github_id = ?', input.githubId)!;
 }
 
 export function startSession(cookies: Cookies, url: URL, userId: number) {
@@ -55,7 +55,7 @@ export function sessionUser(token: string | undefined): User | null {
 	if (!token) return null;
 	return (
 		get<User>(
-			`SELECT u.id, u.x_id, u.handle, u.name, u.avatar_url, u.created_at
+			`SELECT u.id, u.github_id, u.handle, u.name, u.avatar_url, u.created_at
 			FROM sessions s JOIN users u ON u.id = s.user_id
 			WHERE s.token_hash = ? AND s.expires_at > ?`,
 			sha256(token),

@@ -12,7 +12,7 @@
 	import { captureFlip } from '#lib/flip.ts';
 	import Handle from '#lib/components/Handle.svelte';
 	import Ticker from '#lib/components/Ticker.svelte';
-	import XMark from '#lib/components/XMark.svelte';
+	import GitHubMark from '#lib/components/GitHubMark.svelte';
 	import type { LayoutProps } from './$types';
 
 	let { data, children }: LayoutProps = $props();
@@ -129,7 +129,7 @@
 			</a>
 		{:else}
 			<a class="btn btn-primary btn-small" href={connectHref(path === '/' ? '/' : path + page.url.search)} data-sveltekit-reload data-sveltekit-preload-data="false">
-				<XMark size={13} /> Connect X
+				<GitHubMark size={13} /> Connect GitHub
 			</a>
 		{/if}
 	</div>
@@ -198,6 +198,10 @@
 		align-items: center;
 		gap: 10px;
 		margin-left: auto;
+		min-width: 0;
+	}
+	.submit {
+		flex-shrink: 0;
 	}
 	.account {
 		display: inline-flex;

@@ -8,7 +8,7 @@
 	import ShareDialog from '#lib/components/ShareDialog.svelte';
 	import Spark from '#lib/components/Spark.svelte';
 	import Tabs from '#lib/components/Tabs.svelte';
-	import XMark from '#lib/components/XMark.svelte';
+	import GitHubMark from '#lib/components/GitHubMark.svelte';
 	import { fullDate, milestone, money, plural, reference, wholeMoney } from '#lib/format.ts';
 	import type { LayoutProps } from './$types';
 
@@ -54,8 +54,8 @@
 		justDonated
 			? `A donation of up to ${money(justDonated.amount)} has been pledged towards this research on OpenResearch.`
 			: project.spent > 0
-				? `${reference(project.id)} has raised ${money(project.spent)} on OpenResearch. It was submitted by @${project.author_handle}.`
-				: `${reference(project.id)} has been listed on OpenResearch by @${project.author_handle}, and it has not yet been funded.`
+				? `${reference(project.id)} has raised ${money(project.spent)} on OpenResearch.`
+				: `${reference(project.id)} has been listed on OpenResearch, and it has not yet been funded.`
 	);
 
 	const metaImage = $derived(
@@ -107,7 +107,7 @@
 			<span class="ref">{reference(project.id)}</span>
 			<span class="author">
 				<Handle handle={project.author_handle} avatar={project.author_avatar} size={26} strong />
-				<a class="on-x" href="https://x.com/{project.author_handle}" target="_blank" rel="noopener noreferrer" aria-label="@{project.author_handle} on X"><XMark size={12} /></a>
+				<a class="on-github" href="https://github.com/{project.author_handle}" target="_blank" rel="noopener noreferrer" aria-label="@{project.author_handle} on GitHub"><GitHubMark size={12} /></a>
 			</span>
 			<span class="muted when">Submitted on {fullDate(project.created_at)}</span>
 		</div>
@@ -229,7 +229,7 @@
 		gap: 8px;
 		min-width: 0;
 	}
-	.on-x {
+	.on-github {
 		display: grid;
 		place-items: center;
 		width: 24px;
@@ -240,7 +240,7 @@
 		transition: color 0.15s ease;
 	}
 	@media (hover: hover) and (pointer: fine) {
-		.on-x:hover {
+		.on-github:hover {
 			color: var(--ink);
 		}
 	}

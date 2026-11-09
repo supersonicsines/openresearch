@@ -19,11 +19,11 @@ test('an empty site says so plainly', async ({ page }) => {
 	await expect(page.getByText('No donations have been spent in this period.')).toBeVisible();
 });
 
-test('X must be connected before a prompt can be submitted, and the draft survives', async ({ page }) => {
+test('GitHub must be connected before a prompt can be submitted, and the draft survives', async ({ page }) => {
 	await page.goto('/submit');
 	await page.getByLabel('Prompt').fill(PROMPT);
 	await expect(page.getByRole('button', { name: 'Submit prompt' })).toHaveCount(0);
-	const connect = page.getByRole('link', { name: 'Connect X to submit' });
+	const connect = page.getByRole('link', { name: 'Connect GitHub to submit' });
 	await expect(connect).toBeVisible();
 	await connect.click();
 	await page.waitForURL(/\/auth\/dev/);
@@ -74,11 +74,11 @@ test('a prompt can be submitted, and a repository is created for it', async ({ p
 	await expect(page.getByLabel('Prompt')).toHaveValue('');
 });
 
-test('a signed-out visitor is asked to connect X before donating', async ({ page }) => {
+test('a signed-out visitor is asked to connect GitHub before donating', async ({ page }) => {
 	await page.goto(`/p/${slug}`);
 	await page.getByRole('button', { name: 'Donate' }).first().click();
-	await expect(page.getByText('An X account must be connected before a donation can be made.')).toBeVisible();
-	await expect(page.getByRole('dialog').getByRole('link', { name: 'Connect X' })).toBeVisible();
+	await expect(page.getByText('A GitHub account must be connected before a donation can be made.')).toBeVisible();
+	await expect(page.getByRole('dialog').getByRole('link', { name: 'Connect GitHub' })).toBeVisible();
 });
 
 test('the spending limit warning is obvious, and a key without a limit needs acknowledgement', async ({ page }) => {
@@ -317,6 +317,8 @@ test('cards can be generated and carry the right links', async ({ page, baseURL 
 	const url = new URL(post!);
 	expect(url.origin + url.pathname).toBe('https://x.com/intent/tweet');
 	expect(url.searchParams.get('url')).toBe(`${baseURL}/p/${slug}`);
+	// These are GitHub handles. On X the same name may belong to someone else.
+	expect(url.searchParams.get('text')).not.toContain('@');
 
 	await expect(dialog.getByRole('link', { name: 'Download image' })).toHaveAttribute('download', /\.png$/);
 
@@ -367,7 +369,7 @@ test('signing out ends the session', async ({ page }) => {
 	await signIn(page, handle, '/account');
 	await page.getByRole('button', { name: 'Sign out' }).click();
 	await page.waitForURL('/');
-	await expect(page.getByRole('link', { name: 'Connect X' }).first()).toBeVisible();
+	await expect(page.getByRole('link', { name: 'Connect GitHub' }).first()).toBeVisible();
 	await page.goto('/account');
 	await page.waitForURL(/\/auth\/dev/);
 });

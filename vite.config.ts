@@ -22,7 +22,7 @@ export default defineConfig(({ command, mode }) => {
 						'script-src': ['self'],
 						// Svelte transitions and the demo stage set inline styles.
 						'style-src': ['self', 'unsafe-inline'],
-						'img-src': ['self', 'data:', 'https://pbs.twimg.com', 'https://abs.twimg.com'],
+						'img-src': ['self', 'data:', 'https://avatars.githubusercontent.com'],
 						'font-src': ['self'],
 						'connect-src': ['self'],
 						'object-src': ['none'],

@@ -182,7 +182,7 @@ async function avatarData(url: string | null): Promise<string | null> {
 	if (!url) return null;
 	try {
 		const parsed = new URL(url);
-		if (parsed.hostname !== 'pbs.twimg.com') return null;
+		if (parsed.hostname !== 'avatars.githubusercontent.com') return null;
 		const res = await fetch(parsed, { signal: AbortSignal.timeout(3000) });
 		if (!res.ok) return null;
 		const type = res.headers.get('content-type') ?? 'image/jpeg';

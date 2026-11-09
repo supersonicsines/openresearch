@@ -5,8 +5,8 @@ import { addressKey, clientKey, hit, limitFor, routedPath, ruleFor, UNREAD_ADDRE
 const { isPublicOrigin, startupReport } = await import('../../src/lib/server/env.ts');
 
 const GOOD = {
-	X_CLIENT_ID: 'id',
-	X_CLIENT_SECRET: 'secret',
+	GITHUB_CLIENT_ID: 'id',
+	GITHUB_CLIENT_SECRET: 'secret',
 	ENCRYPTION_KEY: Buffer.alloc(32, 1).toString('base64'),
 	ADMIN_HANDLES: 'someone',
 	CONTACT_EMAIL: 'a@example.org',
@@ -31,11 +31,11 @@ describe('startup checks', () => {
 
 	it.each([
 		['plain http', 'http://example.org', {}],
-		['sign-in without X', 'https://example.org', { ALLOW_DEV_SIGNIN: '1' }],
+		['sign-in without GitHub', 'https://example.org', { ALLOW_DEV_SIGNIN: '1' }],
 		['demonstration mode', 'https://example.org', { DEMO_MODE: '1' }],
 		['keys sent elsewhere', 'https://example.org', { OPENROUTER_BASE_URL: 'https://evil.example/api/v1' }],
-		['a stand-in for X', 'https://example.org', { X_API_BASE: 'http://localhost:1' }],
-		['no X secret', 'https://example.org', { X_CLIENT_SECRET: '' }],
+		['a stand-in for GitHub', 'https://example.org', { GITHUB_API_BASE: 'http://localhost:1' }],
+		['no GitHub secret', 'https://example.org', { GITHUB_CLIENT_SECRET: '' }],
 		['no encryption key', 'https://example.org', { ENCRYPTION_KEY: '' }],
 		['a short encryption key', 'https://example.org', { ENCRYPTION_KEY: 'c2hvcnQ=' }],
 		['no address header', 'https://example.org', { ADDRESS_HEADER: '' }]
@@ -77,7 +77,7 @@ describe('limits', () => {
 	it('cannot be avoided by encoding the path', () => {
 		expect(ruleFor('GET', routedPath('/%63ard/site.png'))?.name).toBe('card');
 		expect(ruleFor('GET', routedPath('/p/x/archive.zi%70'))?.name).toBe('zip');
-		expect(ruleFor('GET', routedPath('/%61uth/x'))?.name).toBe('auth');
+		expect(ruleFor('GET', routedPath('/%61uth/github'))?.name).toBe('auth');
 		expect(routedPath('/bad%E0%A4%A')).toBe('/bad%E0%A4%A');
 	});
 	it('counts an IPv6 /64 as one visitor', () => {

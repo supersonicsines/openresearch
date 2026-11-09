@@ -18,7 +18,7 @@ export default defineConfig({
 		channel: process.env.PW_CHANNEL ?? 'chrome'
 	},
 	webServer: {
-		command: `rm -rf data-e2e && ADMIN_HANDLES=launchadmin DEMO_DATA_DIR=data-e2e BUILD_DIR=build-e2e PORT=${PORT} MOCK_PORT=8798 MOCK_DELAY=6 node scripts/demo.mjs --no-seed --no-open --build`,
+		command: `rm -rf data-e2e && ADMIN_HANDLES=launchadmin,a-very-long-handle-of-thirty-nine-chars DEMO_DATA_DIR=data-e2e BUILD_DIR=build-e2e PORT=${PORT} MOCK_PORT=8798 MOCK_DELAY=6 node scripts/demo.mjs --no-seed --no-open --build`,
 		url: `http://localhost:${PORT}`,
 		reuseExistingServer: false,
 		timeout: 180_000,

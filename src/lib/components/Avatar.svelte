@@ -6,7 +6,7 @@
 	}: { src?: string | null; handle: string; size?: number } = $props();
 
 	let failed = $state(false);
-	const trusted = $derived(Boolean(src) && /^https:\/\/(pbs|abs)\.twimg\.com\//.test(src ?? ''));
+	const trusted = $derived(Boolean(src) && /^https:\/\/avatars\.githubusercontent\.com\//.test(src ?? ''));
 </script>
 
 {#if trusted && !failed}

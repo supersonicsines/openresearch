@@ -31,10 +31,10 @@ Built and tested for a public launch, but **not yet deployed**.
   `supersonicsines <279517770+supersonicsines@users.noreply.github.com>`, set in the repository's own git config,
   with UTC dates and no trailers. Nothing in the files may point to a person: no real names, personal emails or
   absolute paths. `.env` and `data/` hold keys and must never be committed.
-- **It has never run against real OpenRouter inference or real X sign-in.** It has only run against stand-ins, and
+- **It has never run against real OpenRouter inference or real GitHub sign-in.** It has only run against stand-ins, and
   the code has been compared with the live documentation. The first real run is in `docs/LAUNCH.md`, and takes
   about ten minutes and a few cents with the operator's own key. No real key should be used without their say.
-- The next steps are all in `docs/LAUNCH.md`: set up the X app **with purchased credit** (the likeliest blocker),
+- The next steps are all in `docs/LAUNCH.md`: register the GitHub OAuth app,
   deploy on Railway, do the first real run, and fund a few prompts so that the board is not empty.
 - Hosting: Railway, at https://openresearch.click, with one service built from the `Dockerfile`, one replica and a
   volume at `/data`. The exact settings are in the Railway section of `docs/DEPLOY.md`, and the facts about Railway's
@@ -54,7 +54,9 @@ These were weighed and decided, so they should not be reopened unless the operat
 - **The 250-word limit is the only rule on a prompt.** A flood limit of 20 prompts per account per hour was added
   for launch. `MAX_PROMPTS_PER_HOUR=0` removes it, and the operator has been told about it.
 - **Output is text and HTML only**, and every prompt is a hosted git repository that can be cloned.
-- **X sign-in is required** to submit or donate.
+- **GitHub sign-in is required** to submit or donate. It replaced X on 9 November 2026, because X charges for every sign-in.
+  Sharing is still to X, through its free post link, and needs no API. **A prefilled X post must never contain an @handle:**
+  these are GitHub handles, and on X the same name may belong to someone else.
 - **The name.** The project was renamed from OpenSearch to OpenResearch on 2026-11-09, to match its domain and
   to avoid the OpenSearch trademark.
 

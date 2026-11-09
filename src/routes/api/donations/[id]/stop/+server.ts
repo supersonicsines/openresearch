@@ -3,7 +3,7 @@ import { stopDonation } from '#lib/server/worker.ts';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = ({ params, locals }) => {
-	if (!locals.user) return Response.json({ message: 'An X account must be connected first.' }, { status: 401 });
+	if (!locals.user) return Response.json({ message: 'A GitHub account must be connected first.' }, { status: 401 });
 	const donation = get<{ id: number; user_id: number }>(
 		'SELECT id, user_id FROM donations WHERE public_id = ?',
 		params.id

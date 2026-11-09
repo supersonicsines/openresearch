@@ -36,14 +36,14 @@ if (!e.ENCRYPTION_KEY) bad('ENCRYPTION_KEY is not set. `npm run setup` creates o
 else if (Buffer.from(e.ENCRYPTION_KEY, 'base64').length !== 32) bad('ENCRYPTION_KEY must be 32 bytes, base64 encoded.');
 else ok('ENCRYPTION_KEY is set.');
 
-if (e.X_CLIENT_ID && e.X_CLIENT_SECRET) ok('X_CLIENT_ID and X_CLIENT_SECRET are set.');
-else bad('X_CLIENT_ID and X_CLIENT_SECRET must both be set.');
-if (origin) console.log(`        The callback registered with X must be exactly ${origin.replace(/\/$/, '')}/auth/x/callback`);
+if (e.GITHUB_CLIENT_ID && e.GITHUB_CLIENT_SECRET) ok('GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET are set.');
+else bad('GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET must both be set.');
+if (origin) console.log(`        The callback registered with GitHub must be exactly ${origin.replace(/\/$/, '')}/auth/github/callback`);
 
 for (const name of ['ALLOW_DEV_SIGNIN', 'DEMO_MODE']) {
 	if (e[name] === '1') bad(`${name} must not be set on a public site.`);
 }
-for (const name of ['OPENROUTER_BASE_URL', 'X_AUTHORIZE_URL', 'X_API_BASE']) {
+for (const name of ['OPENROUTER_BASE_URL', 'GITHUB_WEB_BASE', 'GITHUB_API_BASE']) {
 	if (e[name]) bad(`${name} is for tests only and should be removed.`);
 }
 

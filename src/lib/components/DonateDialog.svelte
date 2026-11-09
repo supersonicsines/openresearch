@@ -12,7 +12,7 @@
 	import { money, plural, shortModelName } from '#lib/format.ts';
 	import Dialog from './Dialog.svelte';
 	import KeyForm from './KeyForm.svelte';
-	import XMark from './XMark.svelte';
+	import GitHubMark from './GitHubMark.svelte';
 
 	type Model = { id: string; name: string; pricing: Pricing };
 	type KeyInfo = { preview: string; limit_micro: number | null; remaining_micro: number | null };
@@ -124,14 +124,14 @@
 
 <Dialog bind:open title="Donate to this project">
 	{#if !signedIn}
-		<p class="lead">An X account must be connected before a donation can be made.</p>
+		<p class="lead">A GitHub account must be connected before a donation can be made.</p>
 		<a
 			class="btn btn-primary btn-wide"
 			href={connectHref(page.url.pathname)}
 			data-sveltekit-reload
 			data-sveltekit-preload-data="false"
 		>
-			<XMark /> Connect X
+			<GitHubMark /> Connect GitHub
 		</a>
 	{:else if !keyInfo}
 		<div in:fade={{ duration: 160 }}>

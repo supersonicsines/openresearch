@@ -2,7 +2,7 @@
 	import { page } from '$app/state';
 	import Avatar from '#lib/components/Avatar.svelte';
 	import ShareDialog from '#lib/components/ShareDialog.svelte';
-	import XMark from '#lib/components/XMark.svelte';
+	import GitHubMark from '#lib/components/GitHubMark.svelte';
 	import { money, plural } from '#lib/format.ts';
 	import type { PageProps } from './$types';
 
@@ -31,7 +31,7 @@
 		<h1 class="at">@{data.person.handle}</h1>
 		<p class="named muted">
 			{#if data.person.name !== data.person.handle}<span>{data.person.name}</span>{/if}
-			<a class="link x" href="https://x.com/{data.person.handle}" target="_blank" rel="noopener noreferrer"><XMark size={12} /> View on X</a>
+			<a class="link on-github" href="https://github.com/{data.person.handle}" target="_blank" rel="noopener noreferrer"><GitHubMark size={12} /> View on GitHub</a>
 		</p>
 	</div>
 	<button class="btn btn-quiet btn-small share" type="button" onclick={() => (shareOpen = true)}>
@@ -75,7 +75,7 @@
 	title={`Share @${data.person.handle}`}
 	cardUrl="/card/donor/{data.person.handle}.png"
 	shareUrl="{page.url.origin}/u/{data.person.handle}"
-	postText={`Donations made by @${data.person.handle} towards research on OpenResearch.`}
+	postText="Donations made towards research on OpenResearch."
 	fileName="openresearch-{data.person.handle}.png"
 />
 
@@ -105,7 +105,7 @@
 		margin-top: 4px;
 		font-size: 0.9375rem;
 	}
-	.x {
+	.on-github {
 		display: inline-flex;
 		align-items: center;
 		gap: 6px;

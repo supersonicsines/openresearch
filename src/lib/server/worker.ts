@@ -321,8 +321,8 @@ async function runOnce(donation: DonationRow, signal: AbortSignal) {
 		donation.project_id
 	)!;
 	if (project.hidden_at) return finish(donation.id, 'failed', 'The project was removed by the operator of this site.');
-	const donor = get<{ handle: string; x_id: string }>(
-		'SELECT handle, x_id FROM users WHERE id = ?',
+	const donor = get<{ handle: string; github_id: string }>(
+		'SELECT handle, github_id FROM users WHERE id = ?',
 		donation.user_id
 	)!;
 
@@ -511,7 +511,7 @@ Input-tokens: ${inputTokens}
 Output-tokens: ${outputTokens}
 Cost-usd: ${(cost / 1_000_000).toFixed(6)}
 `,
-		{ name: `@${donor.handle}`, email: `${donor.x_id}@x.openresearch.invalid` }
+		{ name: `@${donor.handle}`, email: `${donor.github_id}@github.openresearch.invalid` }
 	);
 
 	const sources: Source[] = research.sources;

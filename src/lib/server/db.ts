@@ -5,7 +5,7 @@ import { config } from './env.ts';
 
 export type User = {
 	id: number;
-	x_id: string;
+	github_id: string;
 	handle: string;
 	name: string;
 	avatar_url: string | null;
@@ -124,7 +124,9 @@ const MIGRATIONS: string[] = [
 	// Covers what the board adds up on every read, so that the totals do not need to visit each run.
 	`
 	CREATE INDEX runs_totals ON runs(status, project_id, user_id, finished_at, cost_micro, seq);
-	`
+	`,
+	// Accounts are identified by GitHub, in place of X.
+	`ALTER TABLE users RENAME COLUMN x_id TO github_id;`,
 ];
 
 const holder = globalThis as unknown as { __osDb?: DatabaseSync };

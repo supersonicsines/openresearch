@@ -384,8 +384,8 @@ test('the widest possible handle fits on every page at every width', async ({ pa
 	}
 });
 
-test('signed in with the longest handle and admin access, the header fits at every width', async ({ page }) => {
-	await signIn(page, 'launchadmin');
+test('signed in with the longest handle GitHub allows and admin access, the header fits at every width', async ({ page }) => {
+	await signIn(page, 'a-very-long-handle-of-thirty-nine-chars');
 	await page.goto('/');
 	for (const width of [1280, 1024, 960, 921, 920, 900, 860, 768, 721, 720, 600, 480, 390, 360, 320]) {
 		await page.setViewportSize({ width, height: 700 });
@@ -435,6 +435,21 @@ test('the site can be monitored, shared and read', async ({ page, request }) => 
 	await expect(page.getByRole('heading', { name: 'Terms' })).toBeVisible();
 	await page.getByRole('navigation', { name: 'Site information' }).getByRole('link', { name: 'Privacy' }).click();
 	await expect(page.getByRole('heading', { name: 'Privacy' })).toBeVisible();
+});
+
+test('the longest handle GitHub allows fits its own pages and card', async ({ page, request }) => {
+	await signIn(page, 'a-very-long-handle-of-thirty-nine-chars');
+	const slug = await submitPrompt(page, 'How far can a long handle go before something gives way?');
+	for (const width of [1280, 768, 390, 320]) {
+		await page.setViewportSize({ width, height: 700 });
+		for (const path of ['/', `/p/${slug}`, '/u/a-very-long-handle-of-thirty-nine-chars', '/account']) {
+			await page.goto(path);
+			const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+			expect(overflow, `${path} at ${width}`).toBeLessThanOrEqual(0);
+		}
+	}
+	const card = await request.get(`/card/project/${slug}.png`);
+	expect(card.status()).toBe(200);
 });
 
 test('cards survive what people actually type', async ({ page, request }) => {

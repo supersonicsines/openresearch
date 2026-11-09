@@ -68,12 +68,12 @@ function makeLedger() {
     turn: 0,
     notes: [] as Note[],
     donors: [
-      { handle: 'mira_kovacs', amount: 18.4 },
-      { handle: 'j_whitlock', amount: 12.6 },
-      { handle: 'h_ashworth', amount: 12.4 }
+      { handle: 'mira-kovacs', amount: 18.4 },
+      { handle: 'j-whitlock', amount: 12.6 },
+      { handle: 'h-ashworth', amount: 12.4 }
     ] as Donor[],
     /** The two lower donors take it in turns, each overtaking the other. */
-    current: 'h_ashworth'
+    current: 'h-ashworth'
   }
 }
 
@@ -106,7 +106,7 @@ function land(ledger: Ledger) {
 function advance(ledger: Ledger) {
   ledger.run += 1
   ledger.turn = (ledger.turn + 1) % RUNS.length
-  ledger.current = ledger.current === 'h_ashworth' ? 'j_whitlock' : 'h_ashworth'
+  ledger.current = ledger.current === 'h-ashworth' ? 'j-whitlock' : 'h-ashworth'
 }
 
 const STATUS: Record<Phase, string> = {

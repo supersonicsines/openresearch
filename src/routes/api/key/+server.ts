@@ -7,7 +7,7 @@ import type { RequestHandler } from './$types';
 const reply = (status: number, message: string) => Response.json({ message }, { status });
 
 export const POST: RequestHandler = async ({ request, locals }) => {
-	if (!locals.user) return reply(401, 'An X account must be connected first.');
+	if (!locals.user) return reply(401, 'A GitHub account must be connected first.');
 	const body = (await request.json().catch(() => null)) as { key?: unknown; acknowledged?: unknown } | null;
 	const key = typeof body?.key === 'string' ? body.key.trim() : '';
 	if (!looksLikeKey(key)) {
@@ -46,7 +46,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 };
 
 export const DELETE: RequestHandler = ({ locals }) => {
-	if (!locals.user) return reply(401, 'An X account must be connected first.');
+	if (!locals.user) return reply(401, 'A GitHub account must be connected first.');
 	stopDonationsForUser(locals.user.id, 'The OpenRouter key was removed.');
 	deleteKey(locals.user.id);
 	return Response.json({ status: 'removed' });

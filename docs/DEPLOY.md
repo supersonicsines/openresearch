@@ -12,21 +12,19 @@ Netlify will not work, because the research runs happen inside the server proces
 | Disk | Persistent. About 250 KB per prompt after a few runs, and growing with each one |
 | Size | 1 CPU and 1 GB of memory is enough to begin with |
 | In front | A proxy that provides HTTPS. Caddy is the simplest |
-| Accounts | A domain, an X developer app with credit, and an OpenRouter key for the first test |
+| Accounts | A domain, a GitHub OAuth app, and an OpenRouter key for the first test |
 
-## 1. Set up the X app
+## 1. Register the GitHub OAuth app
 
-This step is the most likely to block a launch, and it can take time, so it should be done first.
+Sign-in is free, and needs no credit or approval.
 
-1. An app is created at <https://developer.x.com>, of the type **Web App**, with OAuth 2.0 enabled.
-2. The app is set to **Pay-per-use** and **Production**. Otherwise X refuses the sign-in with `client-not-enrolled`.
-3. **A small amount of credit is bought, auto-recharge is left off, and the balance is watched.** X's
-   documentation states that API requests fail until credits have been purchased, so with no credit nobody
-   can sign in at all. Each sign-in is a paid lookup of one user, at about $0.01. The current price should
-   be checked in the developer console. With auto-recharge off, a flood of sign-ins cannot spend more than
-   the balance.
-4. `https://YOUR-DOMAIN/auth/x/callback` is registered as the callback. It must match exactly.
-5. The Client ID and Client Secret are copied for step 3 below.
+1. An OAuth app is registered at <https://github.com/settings/applications/new>, with `https://YOUR-DOMAIN`
+   as the homepage.
+2. `https://YOUR-DOMAIN/auth/github/callback` is entered as the callback. It must match exactly.
+3. A client secret is generated on the app's page. It is shown once.
+4. The Client ID and the secret are copied for step 3 below.
+
+No scope is requested, so the site can read only the public profile, and no access token is kept.
 
 ## 2. Prepare the server (Ubuntu or Debian)
 
@@ -57,21 +55,21 @@ npm run preflight  # must report that nothing is blocking a launch
 | `HOST`, `PORT` | Keep `127.0.0.1` and `3000`, behind the proxy |
 | `ADDRESS_HEADER` | `X-Forwarded-For`. Required on a public address |
 | `XFF_DEPTH` | `1`, for one proxy in front of the site. On Railway it is `2`, as explained [below](#railway) |
-| `X_CLIENT_ID`, `X_CLIENT_SECRET` | From step 1 |
+| `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` | From step 1 |
 | `ENCRYPTION_KEY` | Created by `npm run setup`. **It should also be stored somewhere else**: without it, stored keys cannot be read |
-| `ADMIN_HANDLES` | The X handle or handles allowed into `/admin`, separated by commas |
+| `ADMIN_HANDLES` | The GitHub handle or handles allowed into `/admin`, separated by commas |
 | `CONTACT_EMAIL` | Shown on the terms and privacy pages |
 | `MAX_PROMPTS_PER_HOUR` | Flood limit per account. Default 20, and `0` removes it |
 | `MAX_ACTIVE_PROJECTS` | Projects researched at once. Default 16. **`0` pauses all research** |
 | `DATA_DIR` | Default `data`, inside the app folder |
 
 The server refuses to start on a public address if something dangerous or essential is wrong: plain
-http, sign-in without X, demonstration mode, keys pointed away from OpenRouter, X not configured, no
+http, sign-in without GitHub, demonstration mode, keys pointed away from OpenRouter, GitHub not configured, no
 encryption key, or no `ADDRESS_HEADER`. The reason is printed. These checks run only if the build was
 made for the public address, so `ORIGIN` must be set before `npm run build`. On Railway, it also refuses
 to start without a volume, or with `DATA_DIR` outside the volume, whatever the build.
 
-An admin's handle is matched as text. If that handle is ever given up on X, it should be removed from
+An admin's handle is matched as text. If that handle is ever given up on GitHub, it should be removed from
 `ADMIN_HANDLES`, since someone else could then register it.
 
 ## 4. Keep it running
@@ -164,7 +162,7 @@ own proxy provides HTTPS, so steps 2, 4 and 5 above are not needed. These are th
 | `ADDRESS_HEADER` | `X-Forwarded-For` |
 | `XFF_DEPTH` | `2`. Railway's edge removes any `X-Forwarded-For` sent by the visitor, and sends the visitor's address followed by one of its own, so the visitor's is second from the end. With `1`, every visitor would appear to come from Railway and share one allowance |
 | `RAILWAY_DEPLOYMENT_DRAINING_SECONDS` | `120`. Railway sends SIGTERM before each deployment. No new run is then started, runs in progress are given up to 100 seconds to finish, and the process ends. Railway stops it by force when this time runs out |
-| `X_CLIENT_ID`, `X_CLIENT_SECRET`, `ADMIN_HANDLES`, `CONTACT_EMAIL` | As in step 3 |
+| `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `ADMIN_HANDLES`, `CONTACT_EMAIL` | As in step 3 |
 | `ENCRYPTION_KEY` | Created with `npm run setup` on another machine, or with `openssl rand -base64 32`. **A copy must be kept somewhere other than Railway**: without it, stored keys cannot be read, and Railway's volume backups do not include it |
 
 `HOST` and `DATA_DIR` are set by the image and are not added. The site listens on `PORT`, which is 3000
@@ -172,7 +170,7 @@ unless Railway sets another. A `Forwarded` header sent by a visitor reaches the 
 must never be used as `ADDRESS_HEADER`. Plain http is redirected to https by Railway's edge, and the
 site tells browsers to use https from then on.
 
-The callback registered with X is `https://openresearch.click/auth/x/callback`. Once the site answers at
+The callback registered with GitHub is `https://openresearch.click/auth/github/callback`. Once the site answers at
 that domain, the generated `*.up.railway.app` domain is removed from the service: sign-in works only at
 `ORIGIN`, and the site should be reached at one address only.
 

@@ -19,5 +19,5 @@ export async function postJson<T = Record<string, unknown>>(
 }
 
 export function connectHref(next: string): string {
-	return `/auth/x?next=${encodeURIComponent(next)}`;
+	return `/auth/github?next=${encodeURIComponent(next)}`;
 }

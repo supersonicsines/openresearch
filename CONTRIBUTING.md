@@ -21,7 +21,7 @@ npm run test:e2e   # browser tests, using the installed copy of Chrome
 npm run check      # types
 ```
 
-The browser tests use stand-ins for OpenRouter and X, and spend nothing. A real OpenRouter key or X app is never
+The browser tests use stand-ins for OpenRouter and GitHub, and spend nothing. A real OpenRouter key or GitHub OAuth app is never
 needed to work on the site, and none should appear in a pull request.
 
 ## Making a change
