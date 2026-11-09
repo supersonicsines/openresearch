@@ -11,6 +11,7 @@ generated for X.
 - **[CLAUDE.md](CLAUDE.md)**: where the project stands and how it is to be worked on, for the next agent or person.
 - **[docs/DEPLOY.md](docs/DEPLOY.md)**: putting it on a server, step by step.
 - **[docs/LAUNCH.md](docs/LAUNCH.md)**: the launch checklist, the first real run, and the risks that remain.
+- **[CONTRIBUTING.md](CONTRIBUTING.md)**: how a change is proposed, checked and merged. Security problems are reported as [SECURITY.md](SECURITY.md) says.
 
 ## Seeing it working
 
