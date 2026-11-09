@@ -1,8 +1,8 @@
 import type { Handle, HandleServerError, ServerInit } from '@sveltejs/kit/hooks';
 import { SESSION_COOKIE, sessionUser } from '#lib/server/auth.ts';
 import { scrub } from '#lib/server/crypto.ts';
-import { checkStartup } from '#lib/server/env.ts';
-import { clientKey, hit, routedPath, ruleFor } from '#lib/server/limits.ts';
+import { buildOrigin, checkStartup } from '#lib/server/env.ts';
+import { clientKey, hit, limitFor, routedPath } from '#lib/server/limits.ts';
 import { startWorker } from '#lib/server/worker.ts';
 
 export const init: ServerInit = () => {
@@ -12,12 +12,15 @@ export const init: ServerInit = () => {
 
 const LIMITED = 'Too many requests have been made from this address. The attempt may be repeated shortly.';
 
+// A site built for https is only ever reached over https, and browsers are told to remember that.
+const HSTS = buildOrigin.startsWith('https://');
+
 export const handle: Handle = async ({ event, resolve }) => {
 	const path = routedPath(event.url.pathname);
 	const address = clientKey(event.getClientAddress);
 	event.locals.address = address;
-	const rule = address ? ruleFor(event.request.method, path) : null;
-	if (rule && !path.startsWith('/_app/')) {
+	const rule = limitFor(event.request.method, path, address);
+	if (rule) {
 		const wait = hit(`${rule.name}:${address}`, rule.limit, rule.windowMs);
 		if (wait) {
 			const json = path.startsWith('/api/') || event.request.headers.get('accept')?.includes('json');
@@ -48,6 +51,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 	response.headers.set('X-Content-Type-Options', 'nosniff');
 	response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
 	response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');
+	if (HSTS) response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
 	return response;
 };
 

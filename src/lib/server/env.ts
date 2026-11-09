@@ -1,7 +1,7 @@
 import { dev as isDev } from '$app/env';
 import { execFileSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { isAbsolute, join, relative, resolve, sep } from 'node:path';
 
 if (existsSync('.env')) process.loadEnvFile('.env');
 
@@ -64,12 +64,29 @@ function encryptionKeyProblem(value: string | undefined): string | null {
 export type StartupReport = { problems: string[]; warnings: string[] };
 
 /**
+ * On Railway, anything written outside an attached volume is lost at the next deployment, including
+ * the database, the repositories and the record of what has been spent.
+ */
+function railwayProblem(env: Record<string, string | undefined>): string | null {
+	if (!env.RAILWAY_ENVIRONMENT) return null;
+	const mount = env.RAILWAY_VOLUME_MOUNT_PATH;
+	if (!mount) return 'No volume is attached to this Railway service, so everything saved would be lost at the next deployment. A volume must be mounted at /data.';
+	const dataDir = resolve(env.DATA_DIR || 'data');
+	const path = relative(resolve(mount), dataDir);
+	const inside = path === '' || (!isAbsolute(path) && path !== '..' && !path.startsWith(`..${sep}`));
+	if (inside) return null;
+	return `DATA_DIR is ${dataDir}, which is outside the Railway volume at ${mount}, so everything saved would be lost at the next deployment.`;
+}
+
+/**
  * What must be true before real keys and real accounts are handled. Any problem stops the server,
  * because each of these would either expose visitors or leave the site unusable.
  */
 export function startupReport(origin: string, env: Record<string, string | undefined>): StartupReport {
 	const problems: string[] = [];
 	const warnings: string[] = [];
+	const railway = railwayProblem(env);
+	if (railway) problems.push(railway);
 	if (!isPublicOrigin(origin)) return { problems, warnings };
 
 	if (!origin.startsWith('https://')) problems.push(`ORIGIN must use https, but the site was built for ${origin}.`);

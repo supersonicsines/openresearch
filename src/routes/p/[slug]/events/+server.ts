@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
 import { get } from '#lib/server/db.ts';
-import { currentRun, subscribe, type ProjectEvent } from '#lib/server/events.ts';
+import { currentRun, streamsClosed, subscribe, type ProjectEvent } from '#lib/server/events.ts';
 import { openStream } from '#lib/server/limits.ts';
 import type { RequestHandler } from './$types';
 
@@ -31,7 +31,7 @@ export const GET: RequestHandler = ({ params, request, locals }) => {
 			if (live) push({ type: 'run', live });
 			else send(': connected\n\n');
 
-			const unsubscribe = subscribe(project.id, push);
+			const unsubscribe = subscribe(project.id, push, close);
 			const heartbeat = setInterval(() => send(': keep-alive\n\n'), 20_000);
 
 			function close() {
@@ -48,6 +48,8 @@ export const GET: RequestHandler = ({ params, request, locals }) => {
 			}
 			cleanup = close;
 			request.signal.addEventListener('abort', close);
+			// While the server stops, the stream ends at once, and the browser tries again later.
+			if (streamsClosed()) close();
 		},
 		cancel() {
 			cleanup();

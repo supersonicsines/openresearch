@@ -5,6 +5,7 @@ import { createHash, randomBytes } from 'node:crypto';
 import { rmSync } from 'node:fs';
 import { networkInterfaces } from 'node:os';
 import { createServer, type Server } from 'node:http';
+import { DatabaseSync } from 'node:sqlite';
 
 const PORT = 4174;
 const ORIGIN = `http://localhost:${PORT}`;
@@ -260,6 +261,56 @@ test('work is resumed after the server is killed part way through a run', async 
 	expect(numbers).toEqual(numbers.map((_, i) => i + 1));
 	await page.goto(`${ORIGIN}/p/${slug}/repository`);
 	await expect(page.locator('.log li')).toHaveCount(numbers.length + 1);
+});
+
+/** Reads the database directly, beside the running server. */
+function query<T>(sql: string, ...params: (string | number)[]): T {
+	const db = new DatabaseSync(`${DATA}/openresearch.sqlite`, { readOnly: true });
+	try {
+		return db.prepare(sql).get(...params) as T;
+	} finally {
+		db.close();
+	}
+}
+
+test('a run in progress is finished when the server is asked to stop, and no further run is started', async ({ page }) => {
+	// The key added in the test before is used again.
+	await page.goto(`${ORIGIN}/auth/x?next=/`);
+	await page.waitForURL(`${ORIGIN}/`);
+	await page.goto(`${ORIGIN}/submit`);
+	await page.getByLabel('Prompt').fill('How well do heat pumps work? A prompt for a server that is asked to stop.');
+	await page.getByRole('button', { name: 'Submit prompt' }).click();
+	await page.waitForURL(/\/p\//);
+	const slug = new URL(page.url()).pathname.split('/')[2];
+	await page.evaluate(
+		async (slug) => fetch(`/api/projects/${slug}/donations`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ amountMicro: 4_000_000, model: 'anthropic/claude-sonnet-5.5' }) }),
+		slug
+	);
+	await page.reload();
+	await expect(page.getByRole('region', { name: 'Run in progress' })).toBeVisible();
+
+	const RUNS = 'SELECT COUNT(*) AS n FROM runs WHERE project_id = (SELECT id FROM projects WHERE slug = ?)';
+	const before = query<{ n: number }>(RUNS, slug).n;
+	const exited = new Promise<number | null>((resolve) => app.once('exit', (code) => resolve(code)));
+	const asked = Date.now();
+	app.kill('SIGTERM');
+	expect(await exited).toBe(0);
+	// The live connection on the page did not hold the process open until adapter-node's 30 seconds ran out.
+	expect(Date.now() - asked).toBeLessThan(25_000);
+
+	expect(query<{ n: number }>(RUNS, slug).n).toBe(before + 1);
+	const donation = query<{ public_id: string; status: string; run_count: number }>(
+		'SELECT public_id, status, run_count FROM donations WHERE project_id = (SELECT id FROM projects WHERE slug = ?)',
+		slug
+	);
+	// The donation is left open, to be resumed at the next start.
+	expect(donation.status).toBe('running');
+	expect(donation.run_count).toBe(before + 1);
+
+	startApp();
+	await waitUp();
+	await page.goto(`${ORIGIN}/account`);
+	expect(await page.evaluate(async (id) => (await fetch(`/api/donations/${id}/stop`, { method: 'POST' })).status, donation.public_id)).toBe(200);
 });
 
 test('a stored key still works after a restart', async ({ page }) => {

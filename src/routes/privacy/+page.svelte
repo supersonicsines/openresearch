@@ -18,7 +18,7 @@
 		</ul>
 
 		<h2>What is public</h2>
-		<p>Prompts, findings, the @handle of whoever submitted or funded them, amounts, models and dates are all public. They are committed to public git repositories, and each commit names the @handle of the donor. Copies may be made by anyone, so a removal from this site cannot reach them.</p>
+		<p>Prompts, findings, the @handle of whoever submitted or funded them, amounts, models and dates are all public. They are committed to public git repositories. The commit for each run records the donor's @handle and numeric X account id, and the first commit in a repository records those of whoever submitted the prompt. The id is part of the commit's author address, in the form <code>1234567@x.openresearch.invalid</code>, which cannot receive mail. Copies may be made by anyone, so a removal from this site cannot reach them.</p>
 
 		<h2>Who else receives it</h2>
 		<p>Prompts and search queries are sent to OpenRouter and to whichever model and search providers it routes to, using the donor's key. Sign-in goes through X. Each of them acts under its own privacy policy. Nothing is sold.</p>

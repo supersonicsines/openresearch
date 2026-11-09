@@ -1,3 +1,4 @@
+import { dev } from '$app/env';
 import {
 	affordableOutputTokens,
 	costMicro,
@@ -14,6 +15,7 @@ import { scrub } from './crypto.ts';
 import { all, get, run, tx } from './db.ts';
 import { config } from './env.ts';
 import {
+	closeStreams,
 	currentRun,
 	publishDelta,
 	publishEnd,
@@ -34,6 +36,7 @@ import type { DonationRow } from './queries.ts';
 import { renderMarkdown, standaloneHtml } from './render.ts';
 import { commitFiles } from './repo.ts';
 import {
+	appendReport,
 	editorSystem,
 	extractLinks,
 	isNoNewFindings,
@@ -54,6 +57,8 @@ type ProjectRow = {
 
 type WorkerState = {
 	started: boolean;
+	/** Set at SIGTERM. No further run is started. */
+	stopping: boolean;
 	active: Set<number>;
 	aborts: Map<number, AbortController>;
 	timer?: ReturnType<typeof setInterval>;
@@ -62,6 +67,7 @@ type WorkerState = {
 const holder = globalThis as unknown as { __osWorker?: WorkerState };
 const state: WorkerState = (holder.__osWorker ??= {
 	started: false,
+	stopping: false,
 	active: new Set(),
 	aborts: new Map()
 });
@@ -80,10 +86,44 @@ export function startWorker() {
 	run(`UPDATE donations SET status = 'queued' WHERE status = 'running'`);
 	state.timer = setInterval(kick, 3000);
 	state.timer.unref?.();
+	// The development server handles its own signals.
+	if (!dev) {
+		process.on('SIGTERM', drain);
+		process.on('SIGINT', drain);
+	}
 	kick();
 }
 
+/** Runs in progress at shutdown are given this long to finish. Railway ends the process after 120 seconds. */
+const DRAIN_MS = 100_000;
+
+/**
+ * Railway sends SIGTERM before every deployment, and starts the new one only once this process has
+ * ended. No further run is started, and those in progress are allowed to finish. Live connections are
+ * then closed, and the process ends when the server has answered its last request. After DRAIN_MS it
+ * ends regardless, and any run still in progress is resumed at the next start, as after a crash. A
+ * second signal ends the process at once.
+ */
+function drain() {
+	if (state.stopping) process.exit(0);
+	state.stopping = true;
+	clearInterval(state.timer);
+	setTimeout(() => {
+		console.error('The server was stopped with a run in progress. It will be resumed at the next start.');
+		process.exit(0);
+	}, DRAIN_MS).unref();
+	// adapter-node emits this once its server has closed and every request has been answered.
+	const served = new Promise((resolve) => process.once('sveltekit:shutdown', resolve));
+	void (async () => {
+		while (state.active.size > 0) await new Promise((resolve) => setTimeout(resolve, 250));
+		closeStreams();
+		await served;
+		process.exit(0);
+	})();
+}
+
 export function kick() {
+	if (state.stopping) return;
 	const open = all<{ project_id: number }>(
 		`SELECT project_id, MIN(id) AS first FROM donations
 		WHERE status IN ('queued','running') GROUP BY project_id ORDER BY first`
@@ -136,6 +176,8 @@ function finish(donationId: number, status: 'completed' | 'failed', reason: stri
 
 async function processProject(projectId: number) {
 	for (;;) {
+		// A donation left open here is resumed at the next start.
+		if (state.stopping) return;
 		const donation = get<DonationRow>(
 			`SELECT * FROM donations WHERE project_id = ? AND status IN ('queued','running')
 			ORDER BY id LIMIT 1`,
@@ -419,9 +461,10 @@ async function runOnce(donation: DonationRow, signal: AbortSignal) {
 			findings = edited.parsed.findings;
 			nextQuestions = edited.parsed.questions;
 		} else {
-			// The report is never lost: if the edit fails, it is appended as it stands. The list of
-			// questions was not revised, so the project must not be left with nothing to ask.
-			findings = findings ? `${findings.trimEnd()}\n\n${report}` : report;
+			// The report is never lost: if the edit fails, it is appended as it stands, up to the limit in
+			// appendReport, and it is always kept in its own run. The list of questions was not revised,
+			// so the project must not be left with nothing to ask.
+			findings = appendReport(findings, report);
 			if (nextQuestions.length === 0) nextQuestions = [question];
 		}
 	}

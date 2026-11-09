@@ -108,6 +108,24 @@ export function withSources(report: string, sources: { url: string; title: strin
 	return `${report.trimEnd()}\n\n## Sources\n\n${list}\n`;
 }
 
+/**
+ * The addresses of the Markdown links in a text. A link cannot run past the next "]", so each attempt to
+ * match ends where the next one could begin. With "]" allowed, a reply of "](http://" repeated over
+ * 100 KB took more than a second, during which the whole site stood still.
+ */
 export function extractLinks(md: string): string[] {
-	return [...new Set([...md.matchAll(/\]\((https?:\/\/[^\s)]+)\)/g)].map((m) => m[1]))];
+	return [...new Set([...md.matchAll(/\]\((https?:\/\/[^\s)\]]+)\)/g)].map((m) => m[1]))];
+}
+
+/**
+ * Findings are sent with every request on a project, and a report is appended to them whenever the
+ * edit fails. Past 60,000 characters, about 9,000 words against the 1,200 that the editor is asked to keep
+ * to, a further report is kept in its own run only. A successful edit shortens the findings again.
+ */
+export const MAX_FINDINGS_CHARS = 60_000;
+
+export function appendReport(findings: string, report: string): string {
+	if (!findings) return report;
+	const appended = `${findings.trimEnd()}\n\n${report}`;
+	return appended.length <= MAX_FINDINGS_CHARS ? appended : findings;
 }

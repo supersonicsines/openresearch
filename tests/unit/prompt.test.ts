@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { checkPrompt, countWords, MAX_CHARS, slugFromPrompt, titleFromPrompt } from '../../src/lib/prompt.ts';
+import { checkPrompt, countWords, freeSlug, MAX_CHARS, slugFromPrompt, titleFromPrompt } from '../../src/lib/prompt.ts';
 
 const words = (n: number) => Array.from({ length: n }, () => 'word').join(' ');
 
@@ -48,5 +48,18 @@ describe('titles and slugs', () => {
 		expect(slugFromPrompt('水はどこから来るのか', 'abc123')).toBe('abc123');
 		expect(slugFromPrompt('- a list item first', 'abc123')).toBe('a-list-item-first-abc123');
 		expect(slugFromPrompt('--- ---', 'abc123')).toMatch(/^[a-z0-9]/);
+	});
+});
+
+describe('slugs already in use', () => {
+	const suffixes = (...list: string[]) => () => list.shift() ?? 'ffffff';
+
+	it('are passed over for another', () => {
+		const taken = new Set(['abc123']);
+		expect(freeSlug('水はどこから来るのか', (s) => taken.has(s), suffixes('abc123', 'abc123', 'def456'))).toBe('def456');
+		expect(freeSlug('Rain and rivers', (s) => s === 'rain-and-rivers-abc123', suffixes('abc123', 'def456'))).toBe('rain-and-rivers-def456');
+	});
+	it('give up rather than reuse one', () => {
+		expect(freeSlug('水はどこから来るのか', () => true, () => 'abc123')).toBeNull();
 	});
 });

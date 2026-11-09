@@ -84,19 +84,24 @@ export function routedPath(pathname: string): string {
 	}
 }
 
+/** Requests whose address cannot be read share this key, so that they are still limited. */
+export const UNREAD_ADDRESS = 'unread';
+
 /**
  * The visitor's address, where one can honestly be determined. Behind a proxy with ADDRESS_HEADER
  * unset, every visitor appears to come from the proxy. They must not then share one allowance, so
- * no address is reported and only limits tied to an account apply.
+ * no address is reported and only limits tied to an account apply. Where the address cannot be read,
+ * as when the header is missing, the request is counted with every other such request.
  */
-export function clientKey(getClientAddress: () => string): string | null {
+export function clientKey(getClientAddress: () => string, headerSet = Boolean(process.env.ADDRESS_HEADER)): string | null {
 	let address: string;
 	try {
-		address = getClientAddress();
+		address = getClientAddress().trim();
 	} catch {
-		return null;
+		return UNREAD_ADDRESS;
 	}
-	if (LOOPBACK.has(address) && !process.env.ADDRESS_HEADER) return null;
+	if (!address) return UNREAD_ADDRESS;
+	if (LOOPBACK.has(address) && !headerSet) return null;
 	return addressKey(address);
 }
 
@@ -112,4 +117,12 @@ export function ruleFor(method: string, path: string): Rule | null {
 	if (path === '/api/activity') return { name: 'activity', limit: 120, windowMs: MINUTE };
 	if (method !== 'GET' && method !== 'HEAD') return { name: 'write', limit: 120, windowMs: MINUTE };
 	return { name: 'read', limit: 1_200, windowMs: MINUTE };
+}
+
+/** The limit on one request from the address given by clientKey, or null where none applies. */
+export function limitFor(method: string, path: string, address: string | null): Rule | null {
+	if (!address || path.startsWith('/_app/')) return null;
+	// The host's health check comes from inside its own network, without the proxy's header.
+	if (address === UNREAD_ADDRESS && path === '/healthz') return null;
+	return ruleFor(method, path);
 }

@@ -17,12 +17,13 @@ export type ProjectEvent =
 	| { type: 'delta'; text: string }
 	| { type: 'end' };
 
-type Bus = { emitter: EventEmitter; live: Map<number, LiveRun> };
+type Bus = { emitter: EventEmitter; live: Map<number, LiveRun>; closed?: boolean };
 const holder = globalThis as unknown as { __osBus?: Bus };
 const bus: Bus = (holder.__osBus ??= { emitter: new EventEmitter(), live: new Map() });
 bus.emitter.setMaxListeners(0);
 
 const channel = (projectId: number) => `project:${projectId}`;
+const CLOSING = 'closing';
 
 export function currentRun(projectId: number): LiveRun | undefined {
 	return bus.live.get(projectId);
@@ -50,7 +51,19 @@ export function publishEnd(projectId: number) {
 	bus.emitter.emit(channel(projectId), { type: 'end' } satisfies ProjectEvent);
 }
 
-export function subscribe(projectId: number, fn: (event: ProjectEvent) => void): () => void {
+/** onClose is called when the server stops, so that no live connection keeps it running. */
+export function subscribe(projectId: number, fn: (event: ProjectEvent) => void, onClose: () => void): () => void {
 	bus.emitter.on(channel(projectId), fn);
-	return () => bus.emitter.off(channel(projectId), fn);
+	bus.emitter.on(CLOSING, onClose);
+	return () => {
+		bus.emitter.off(channel(projectId), fn);
+		bus.emitter.off(CLOSING, onClose);
+	};
+}
+
+export const streamsClosed = () => Boolean(bus.closed);
+
+export function closeStreams() {
+	bus.closed = true;
+	bus.emitter.emit(CLOSING);
 }

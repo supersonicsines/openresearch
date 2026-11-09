@@ -56,3 +56,15 @@ export function slugFromPrompt(prompt: string, suffix: string): string {
 		.replace(/^-+|-+$/g, '');
 	return base ? `${base}-${suffix}` : suffix;
 }
+
+/**
+ * A slug that is not yet in use. A prompt with no Latin letters has only the random part, six hex
+ * digits, so two projects could otherwise be given the same one, and share a repository.
+ */
+export function freeSlug(prompt: string, taken: (slug: string) => boolean, suffix: () => string): string | null {
+	for (let i = 0; i < 20; i++) {
+		const slug = slugFromPrompt(prompt, suffix());
+		if (!taken(slug)) return slug;
+	}
+	return null;
+}

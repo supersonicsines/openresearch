@@ -28,6 +28,11 @@ export function repoExists(slug: string): boolean {
 	return SLUG.test(slug) && existsSync(join(repoDir(slug), '.git'));
 }
 
+/** Whether anything at all is kept under this name, even a repository that was never finished. */
+export function repoPresent(slug: string): boolean {
+	return existsSync(repoDir(slug));
+}
+
 async function git(slug: string, args: string[], extraEnv: Record<string, string> = {}) {
 	const { stdout } = await exec('git', args, {
 		cwd: repoDir(slug),
@@ -84,7 +89,9 @@ export async function createRepo(
 	author: Author
 ): Promise<string> {
 	const dir = repoDir(slug);
-	mkdirSync(dir, { recursive: true });
+	mkdirSync(dirname(dir), { recursive: true });
+	// Fails if the folder exists, so that another project's repository is never written into.
+	mkdirSync(dir);
 	// An empty template leaves out the sample hooks, which come to about 60 KB per repository.
 	await exec('git', ['init', '--quiet', '--template=', '--initial-branch=main', dir], { env: GIT_ENV });
 	await git(slug, ['config', 'core.hooksPath', devNull]);

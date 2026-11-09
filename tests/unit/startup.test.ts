@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addressKey, hit, routedPath, ruleFor } from '../../src/lib/server/limits.ts';
+import { addressKey, clientKey, hit, limitFor, routedPath, ruleFor, UNREAD_ADDRESS } from '../../src/lib/server/limits.ts';
 
 // The checks are pure functions of the address and the settings, so they can be tested directly.
 const { isPublicOrigin, startupReport } = await import('../../src/lib/server/env.ts');
@@ -43,6 +43,29 @@ describe('startup checks', () => {
 		expect(startupReport(origin, { ...GOOD, ...change }).problems).toHaveLength(1);
 	});
 
+	describe('on Railway', () => {
+		const RAILWAY = { ...GOOD, RAILWAY_ENVIRONMENT: 'production', DATA_DIR: '/data' };
+		it('starts with the data folder on the volume', () => {
+			expect(startupReport('https://example.org', { ...RAILWAY, RAILWAY_VOLUME_MOUNT_PATH: '/data' }).problems).toEqual([]);
+			expect(startupReport('https://example.org', { ...RAILWAY, RAILWAY_VOLUME_MOUNT_PATH: '/data', DATA_DIR: '/data/site' }).problems).toEqual([]);
+		});
+		it('refuses to start with no volume', () => {
+			const { problems } = startupReport('https://example.org', RAILWAY);
+			expect(problems).toHaveLength(1);
+			expect(problems[0]).toContain('No volume is attached');
+		});
+		it('refuses to start with the data folder outside the volume', () => {
+			for (const DATA_DIR of ['/app/data', '/', '/database', '/data/../app']) {
+				const { problems } = startupReport('https://example.org', { ...RAILWAY, RAILWAY_VOLUME_MOUNT_PATH: '/data', DATA_DIR });
+				expect(problems, DATA_DIR).toHaveLength(1);
+				expect(problems[0]).toContain('outside the Railway volume');
+			}
+		});
+		it('is checked whatever address the site was built for', () => {
+			expect(startupReport('http://localhost:3000', RAILWAY).problems).toHaveLength(1);
+		});
+	});
+
 	it('warns about what can be lived with', () => {
 		const { problems, warnings } = startupReport('https://example.org', { ...GOOD, ADMIN_HANDLES: '', CONTACT_EMAIL: '' });
 		expect(problems).toEqual([]);
@@ -72,6 +95,28 @@ describe('limits', () => {
 		expect(hit(key, 2, 60_000, now)).toBe(0);
 		expect(hit(key, 2, 60_000, now + 1_000)).toBe(59);
 		expect(hit(key, 2, 60_000, now + 60_000)).toBe(0);
+	});
+	it('still apply when the address cannot be read', () => {
+		const missing = () => {
+			throw new Error('Address header was specified with ADDRESS_HEADER=x-forwarded-for but is absent from request');
+		};
+		expect(clientKey(missing, true)).toBe(UNREAD_ADDRESS);
+		expect(clientKey(missing, false)).toBe(UNREAD_ADDRESS);
+		expect(clientKey(() => '', true)).toBe(UNREAD_ADDRESS);
+		expect(limitFor('GET', '/', UNREAD_ADDRESS)?.name).toBe('read');
+		expect(limitFor('POST', '/submit', UNREAD_ADDRESS)?.name).toBe('write');
+		expect(limitFor('GET', '/card/site.png', UNREAD_ADDRESS)?.name).toBe('card');
+	});
+	it('leave the health check alone when it arrives without an address', () => {
+		expect(limitFor('GET', '/healthz', UNREAD_ADDRESS)).toBeNull();
+		expect(limitFor('GET', '/healthz', '10.0.0.1')?.name).toBe('read');
+	});
+	it('are not applied to a local visitor when no proxy is configured', () => {
+		expect(clientKey(() => '127.0.0.1', false)).toBeNull();
+		expect(clientKey(() => '127.0.0.1', true)).toBe('127.0.0.1');
+		expect(clientKey(() => '203.0.113.9', false)).toBe('203.0.113.9');
+		expect(limitFor('GET', '/', null)).toBeNull();
+		expect(limitFor('GET', '/_app/immutable/x.js', '10.0.0.1')).toBeNull();
 	});
 	it('can be switched off', () => {
 		const key = `test:${Math.random()}`;

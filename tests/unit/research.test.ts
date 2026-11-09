@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { extractLinks, isNoNewFindings, parseEdited, withSources } from '../../src/lib/server/research.ts';
+import {
+	appendReport,
+	extractLinks,
+	isNoNewFindings,
+	MAX_FINDINGS_CHARS,
+	parseEdited,
+	withSources
+} from '../../src/lib/server/research.ts';
 
 describe('reading model replies', () => {
 	it('reads the edited document and questions', () => {
@@ -69,5 +76,33 @@ describe('hostile replies from the editor', () => {
 			findings: 'The answer.',
 			questions: ['What next?']
 		});
+	});
+});
+
+describe('hostile text in the findings', () => {
+	const quick = (text: string) => {
+		const started = performance.now();
+		const links = extractLinks(text);
+		expect(performance.now() - started).toBeLessThan(50);
+		return links;
+	};
+
+	it('has its links read in a single pass, however it is built', () => {
+		expect(quick('](http://'.repeat(11_000))).toEqual([]);
+		expect(quick('](https://x['.repeat(8_000))).toEqual([]);
+		expect(quick('](http://a('.repeat(10_000))).toEqual([]);
+		expect(quick(`](http://${'a'.repeat(100_000)}`)).toEqual([]);
+		expect(quick(`${'](http://'.repeat(11_000)}[a](https://a.example/)`)).toEqual(['https://a.example/']);
+	});
+
+	it('cannot grow without limit when the edit keeps failing', () => {
+		const report = `## A finding\n\n${'Text. '.repeat(4_000).trim()}`;
+		let findings = '';
+		for (let i = 0; i < 20; i++) findings = appendReport(findings, report);
+		expect(findings.length).toBeLessThanOrEqual(MAX_FINDINGS_CHARS);
+		expect(findings.length).toBeGreaterThan(MAX_FINDINGS_CHARS - report.length - 2);
+		expect(findings.startsWith(report)).toBe(true);
+		expect(appendReport('', 'First report.')).toBe('First report.');
+		expect(appendReport('Findings.\n', 'A report.')).toBe('Findings.\n\nA report.');
 	});
 });
