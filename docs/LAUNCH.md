@@ -118,8 +118,9 @@ Left as they are, knowingly:
 
 - An admin is matched by @handle. If that handle were given up on X and registered by someone else, they would
   gain `/admin`. The handle should be removed from `ADMIN_HANDLES` before it is ever changed.
-- `npm audit` reports 2 moderate advisories, through `satori` and `fflate`, about unzipping malformed ZIP64
-  archives. This site never unzips anything, and the only fix offered is a breaking downgrade of `satori`.
+- `npm audit` reports a low advisory in `deepmerge`, which has no fixed version. It is used only while the site is
+  built, by the Svelte plugin to merge the project's own configuration, and it is not in the built site. The `fflate`
+  advisory about malformed ZIP64 archives was fixed on 9 November 2026 by pinning `fflate` to 0.7.5 in `overrides`.
 
 The review found these to be sound: keys are never returned or logged; OAuth state, PKCE and cookie flags;
 cross-site requests; hostile output; database queries; file paths and git arguments; removal across every

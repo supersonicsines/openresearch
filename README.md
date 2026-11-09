@@ -145,3 +145,8 @@ The browser tests use stand-ins for OpenRouter and X, and spend nothing. If Chro
   donor's account page can therefore run slightly above what OpenRouter actually charged.
 - Leaderboards count only finished runs, at the cost OpenRouter reported.
 - There is one server process and one SQLite file, which is sufficient for a launch but is not redundant.
+
+## Licence
+
+The code is released under the [MIT licence](LICENSE). The fonts in `assets/card-fonts/` are under the SIL Open Font
+Licence 1.1, and their licences are kept beside them.

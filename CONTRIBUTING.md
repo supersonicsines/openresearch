@@ -44,3 +44,7 @@ needed to work on the site, and none should appear in a pull request.
 
 Pull requests are squash-merged, so each one becomes a single commit on `main`. For a first-time contributor, the
 checks start once a maintainer has approved them to run.
+
+## Licence
+
+Contributions are released under the [MIT licence](LICENSE), as the rest of the code is.

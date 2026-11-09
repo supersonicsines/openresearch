@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "description": "Public research prompts funded by donated OpenRouter credit.",
+  "license": "MIT",
   "engines": {
     "node": ">=22.17"
   },
@@ -52,5 +53,8 @@
   "imports": {
     "#lib": "./src/lib/index.js",
     "#lib/*": "./src/lib/*"
+  },
+  "overrides": {
+    "fflate": "0.7.5"
   }
 }
