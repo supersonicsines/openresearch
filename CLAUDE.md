@@ -25,25 +25,27 @@ npm run qa:sweep   # reads every word on every page; the instructions are at the
 
 ## Where it stands
 
-Built and tested for a public launch, but **not yet deployed**.
+**Live at https://openresearch.click since 9 November 2026**, on Railway. A push to `main` that passes CI is
+deployed by the `deploy` job, so every push restarts the site, and runs in progress get up to 100 seconds to finish.
 
 - The code is a public repository at https://github.com/supersonicsines/openresearch. Every commit is authored and committed as
   `supersonicsines <279517770+supersonicsines@users.noreply.github.com>`, set in the repository's own git config,
   with UTC dates and no trailers. Nothing in the files may point to a person: no real names, personal emails or
   absolute paths. `.env` and `data/` hold keys and must never be committed.
-- **It has never run against real OpenRouter inference or real GitHub sign-in.** It has only run against stand-ins, and
-  the code has been compared with the live documentation. The first real run is in `docs/LAUNCH.md`, and takes
-  about ten minutes and a few cents with the operator's own key. No real key should be used without their say.
-- The next steps are all in `docs/LAUNCH.md`: register the GitHub OAuth app,
-  deploy on Railway, do the first real run, and fund a few prompts so that the board is not empty.
+- **The first real run was made on 10 November 2026**, with real GitHub sign-in and the operator's own OpenRouter
+  key, capped at $3, and every step passed. What was checked is recorded at the top of `docs/LAUNCH.md`. Four
+  prompts were funded on launch day so that the board is not empty. No real key should be used without the
+  operator's say.
+- What is left is in `docs/LAUNCH.md`: the operator is to read the terms and privacy pages, and the site is to be
+  checked on a physical iPhone and in desktop Safari.
 - Hosting: Railway, at https://openresearch.click, with one service built from the `Dockerfile`, one replica and a
   volume at `/data`. The exact settings are in the Railway section of `docs/DEPLOY.md`, and the facts about Railway's
   proxy behind them were measured on 9 November 2026. The `docker` job in CI builds the image, starts it with a
   volume and waits for its health check. A small VPS with Caddy, as in the rest of `docs/DEPLOY.md`, is the
   alternative. Either way, the host should hold nothing else with keys or money, because this site stores other
   people's API keys.
-- Not checked: a physical iPhone and desktop Safari (only the Safari engine), and a deployment on Railway itself.
-  Docker was not available where this was written, so the image is built only by CI.
+- Not checked: a physical iPhone and desktop Safari (only the Safari engine). Docker was not available where this
+  was written, so the image is built only by CI and by Railway.
 
 ## Decisions the operator has made
 

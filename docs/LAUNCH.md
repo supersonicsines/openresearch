@@ -2,8 +2,30 @@
 
 ## Tested, and how
 
-Everything here ran against stand-ins for OpenRouter and GitHub, on a production build. No real money has
-been spent and no real GitHub sign-in has been made.
+### On the live site, 10 November 2026
+
+The first real run, at https://openresearch.click, with real GitHub sign-in and the operator's own OpenRouter key,
+which has a $3 limit. About $1.45 was spent in all.
+
+- **Sign-in:** the @handle and the real avatar appeared in the header, and Admin appeared in the navigation.
+- **The key:** its limit and the amount left on it were read from OpenRouter and shown on the account page. The
+  donation dialog would not accept $5, because it was more than the key had left.
+- **A run on Claude Haiku 5.5, funded with $0.25 (OR-0001):** the run streamed on the project page, to a visitor
+  who was not signed in as well, and the ticker moved. The report was complete and cited real sources. Its cost
+  agreed with OpenRouter's log: $0.01096 for the first run, shown as $0.01. Further runs then took up the
+  report's open questions.
+- **`git clone https://openresearch.click/git/SLUG.git`** worked, with one commit for the prompt and one for each run.
+- **The card** was served at 1200 × 630, and the `og:` and `twitter:` tags point to it. It was not posted on X.
+- **Reports and removal:** a report sent from a browser that was not signed in reached `/admin`. Removing the
+  project gave visitors a 410 page and stopped its donation, which the account page showed as "Stopped. The
+  project was removed by the operator of this site." The run cut off by the removal was charged ($0.01) but is
+  not counted as raised. Restoring the project brought the page back.
+- **Claude Sonnet 5.5, funded with $0.50 each (OR-0002, OR-0003 and OR-0004):** every report was complete rather
+  than cut short, and a run cost between $0.07 and $0.10.
+
+### Before launch, against stand-ins
+
+Everything below ran against stand-ins for OpenRouter and GitHub, on a production build.
 
 - **Every flow, in Chrome:** visiting, sorting, the full list and its search, filters and pages, the
   leaderboards, signing in, submitting, adding a key (rejected, with no limit, with a limit, replaced, removed),
@@ -37,15 +59,18 @@ been spent and no real GitHub sign-in has been made.
 ### Before going public
 
 - [ ] The terms and privacy pages have been read, and adjusted as needed. They are a sensible draft, not legal advice, and they name no company or jurisdiction.
-- [ ] The Railway service is set up as [DEPLOY.md](DEPLOY.md#railway) describes, and the site answers at https://openresearch.click.
-- [ ] The generated `*.up.railway.app` domain has been removed.
-- [ ] The GitHub OAuth app is registered, and its callback is `https://YOUR-DOMAIN/auth/github/callback` ([DEPLOY.md](DEPLOY.md), step 1).
-- [ ] `ADMIN_HANDLES` and `CONTACT_EMAIL` are set.
-- [ ] `ENCRYPTION_KEY` has been stored somewhere other than the server.
-- [ ] `npm run preflight` reports that nothing is blocking a launch, or, on Railway, the deployment has started and its logs show no warnings.
-- [ ] Backups are scheduled: the volume's scheduled backups on Railway.
+- [x] The Railway service is set up as [DEPLOY.md](DEPLOY.md#railway) describes, and the site answers at https://openresearch.click.
+- [x] The generated `*.up.railway.app` domain has been removed.
+- [x] The GitHub OAuth app is registered, and its callback is `https://YOUR-DOMAIN/auth/github/callback` ([DEPLOY.md](DEPLOY.md), step 1).
+- [x] `ADMIN_HANDLES` and `CONTACT_EMAIL` are set.
+- [x] `ENCRYPTION_KEY` has been stored somewhere other than the server.
+- [x] `npm run preflight` reports that nothing is blocking a launch, or, on Railway, the deployment has started and its logs show no warnings. The only warning is Node's own, that SQLite is experimental.
+- [x] Backups are scheduled: the volume's scheduled backups on Railway.
 
 ### The first real run: about ten minutes and a few cents
+
+Done on 10 November 2026, with the results at the top of this file. Step 8 was checked by fetching the card and
+its tags, not by posting on X.
 
 A **new OpenRouter key with a $2 limit** is used. These parts have never touched the real services.
 
@@ -69,7 +94,7 @@ If a report is cut short on Sonnet, `MAX_RESEARCH_TOKENS` in `src/lib/budget.ts`
 
 ### The first hour
 
-- [ ] Three or four good prompts are funded first, so that the first visitor does not see an empty board.
+- [x] Three or four good prompts are funded first, so that the first visitor does not see an empty board.
 - [ ] `/admin` and the server's log are kept open: the deployment's logs on Railway, or `journalctl -u openresearch -f` under systemd.
 - [ ] To stop all spending at once: `MAX_ACTIVE_PROJECTS=0` and a restart.
 
