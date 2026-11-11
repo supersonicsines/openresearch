@@ -129,6 +129,21 @@ class Client {
 		});
 		return new URL(res.headers.get('location'), ORIGIN).pathname.split('/')[2];
 	}
+	async propose(slug, question) {
+		const res = await this.request(`/api/projects/${slug}/proposals`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(question ? { question } : { kind: 'audit' })
+		});
+		return (await res.json()).id;
+	}
+	pledge(id, dollars, model) {
+		return this.request(`/api/proposals/${id}/pledge`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ amountMicro: Math.round(dollars * 1e6), model })
+		});
+	}
 	donate(slug, dollars, model) {
 		return this.request(`/api/projects/${slug}/donations`, {
 			method: 'POST',
@@ -181,6 +196,18 @@ const DONATIONS = [
 	[5, 'sana-iqbal', 2, 'anthropic/claude-sonnet-5.5']
 ];
 
+// Questions proposed for the next round: the prompt, who proposes, the question (none for the standing
+// audit), and who pledges how much towards it.
+const QUESTIONS = [
+	[9, 'mira-kovacs', 'What do installers charge for enlarging radiators, and how often is it needed in homes built before 1930?', [['mira-kovacs', 3], ['t-oyelaran', 1.5], ['beatrix-lund', 0.5]]],
+	[9, 't-oyelaran', 'How do the trial results compare with what owners report on their own bills over two winters?', [['r-castellano', 2]]],
+	[9, 'sana-iqbal', null, [['sana-iqbal', 1]]],
+	[9, 'beatrix-lund', 'Which refrigerants are used in the units that performed best, and are any of them being phased out?', []],
+	[11, 'h-ashworth', 'How many storm overflows had monitors fitted in each year since 2016, and how complete are the records?', [['h-ashworth', 2], ['mira-kovacs', 1]]],
+	[13, 'j-whitlock', null, [['j-whitlock', 0.5]]],
+	[2, 'sana-iqbal', 'Which decommissioning bonds have actually been called on, and did they cover the cost?', []]
+];
+
 /** How many days ago each of PROMPTS was submitted. */
 const AGES = [0.2, 0.4, 1.5, 2, 3, 4, 5, 6, 8, 40, 22, 9, 3, 1];
 
@@ -219,6 +246,10 @@ async function seed() {
 		});
 	});
 	db.close();
+	for (const [project, handle, question, pledges] of QUESTIONS) {
+		const id = await clients.get(handle).propose(slugs[project], question);
+		for (const [backer, dollars] of pledges) await clients.get(backer).pledge(id, dollars, 'anthropic/claude-sonnet-5.5');
+	}
 	console.log('Sample projects have been added.');
 }
 
@@ -237,8 +268,12 @@ function keepActive() {
 			if (open > 1 || slugs.length === 0) return;
 			const handle = pick(handles);
 			await client.signIn(handle);
-			await client.saveKey(`sk-or-v1-capped-demo-${handle}`);
-			await client.donate(slugs[0].slug, 0.1 + Math.random() * 0.25, pick(models));
+			const donate = () => client.donate(slugs[0].slug, 0.1 + Math.random() * 0.25, pick(models));
+			// A key is added only where none is held. Replacing one would release the pledges made with it.
+			if ((await donate()).status === 400) {
+				await client.saveKey(`sk-or-v1-capped-demo-${handle}`);
+				await donate();
+			}
 		} catch {
 			/* The next one may succeed. */
 		}

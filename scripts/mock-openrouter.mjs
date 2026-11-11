@@ -13,7 +13,12 @@
 //   sk-or-v1-blank...    the model finishes having written nothing
 //   sk-or-v1-held...     each key's first completion returns 402 with Retry-After, then all is well
 //   sk-or-v1-length...   the report stops at its length limit, with finish_reason "length"
+//   sk-or-v1-fading...   a key with $25 remaining when it is first checked twice, and nothing after that
 //   anything else        rejected with 401
+//
+// GET /auth is the page on which a key is approved for a site without being copied. A choice is offered
+// there, and the key that results begins with sk-or-v1-capped or sk-or-v1-nolimit accordingly.
+import { createHash, randomBytes } from 'node:crypto';
 import { createServer } from 'node:http';
 
 const PORT = Number(process.env.MOCK_PORT || 8799);
@@ -189,8 +194,16 @@ function send(res, status, body) {
 	res.end(JSON.stringify(body));
 }
 
-function keyInfo(key) {
+// How many times each sk-or-v1-fading key has been checked.
+const fadingChecks = new Map();
+
+function keyInfo(key, counted = false) {
 	const base = { label: 'mock', usage: 0, is_free_tier: false, limit_reset: null };
+	if (key.startsWith('sk-or-v1-fading')) {
+		const checks = (fadingChecks.get(key) ?? 0) + (counted ? 1 : 0);
+		fadingChecks.set(key, checks);
+		return checks <= 2 ? { ...base, limit: 25, limit_remaining: 25 } : { ...base, limit: 25, usage: 25, limit_remaining: 0 };
+	}
 	if (key.startsWith('sk-or-v1-capped')) return { ...base, limit: 25, limit_remaining: 25 };
 	if (key.startsWith('sk-or-v1-small')) return { ...base, limit: 1, usage: 0.5, limit_remaining: 0.5 };
 	if (key.startsWith('sk-or-v1-spent')) return { ...base, limit: 5, usage: 5, limit_remaining: 0 };
@@ -198,11 +211,62 @@ function keyInfo(key) {
 	return null;
 }
 
+// Codes issued by the approval page, each with the challenge it must be exchanged against.
+const codes = new Map();
+
+function approvalPage(res, url) {
+	const callback = url.searchParams.get('callback_url') ?? '';
+	const challenge = url.searchParams.get('code_challenge') ?? '';
+	const state = url.searchParams.get('state');
+	const link = (kind) => {
+		const target = new URL(callback);
+		if (kind) {
+			const code = `${kind}-${randomBytes(9).toString('hex')}`;
+			codes.set(code, challenge);
+			target.searchParams.set('code', code);
+			if (state) target.searchParams.set('state', state);
+		}
+		return target.toString().replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+	};
+	res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+	res.end(`<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width">
+<title>Stand-in for OpenRouter</title>
+<body style="font: 16px/1.5 system-ui, sans-serif; max-width: 30rem; margin: 15vh auto; padding: 0 20px">
+<h1 style="font-size: 1.25rem">Stand-in for OpenRouter</h1>
+<p>On the real site, a key for OpenResearch would be approved here. Nothing leaves this machine.</p>
+<p><a id="approve" href="${link('capped')}">Approve a key with a $25 limit</a></p>
+<p><a id="approve-nolimit" href="${link('nolimit')}">Approve a key with no limit</a></p>
+<p><a id="decline" href="${link('')}">Decline</a></p>
+</body></html>`);
+}
+
+async function exchange(req, res) {
+	let raw = '';
+	for await (const chunk of req) raw += chunk;
+	let body = {};
+	try {
+		body = JSON.parse(raw);
+	} catch {
+		/* Treated as an invalid code. */
+	}
+	const challenge = codes.get(body.code);
+	codes.delete(body.code);
+	const offered = createHash('sha256').update(String(body.code_verifier ?? '')).digest('base64url');
+	if (challenge === undefined || challenge !== offered) {
+		return send(res, 403, { error: { code: 403, message: 'Invalid code or code_verifier' } });
+	}
+	const kind = String(body.code).split('-')[0];
+	return send(res, 200, { key: `sk-or-v1-${kind}-connected-${randomBytes(6).toString('hex')}` });
+}
+
 createServer(async (req, res) => {
 	const key = (req.headers.authorization ?? '').replace('Bearer ', '');
+	const url = new URL(req.url, 'http://127.0.0.1');
+	if (url.pathname === '/auth') return approvalPage(res, url);
+	if (url.pathname === '/api/v1/auth/keys') return req.method === 'POST' ? exchange(req, res) : send(res, 405, { error: { code: 405, message: 'Method Not Allowed' } });
 	if (req.url === '/api/v1/models') return send(res, 200, { data: MODELS });
 	if (req.url === '/api/v1/key') {
-		const info = keyInfo(key);
+		const info = keyInfo(key, true);
 		return info ? send(res, 200, { data: info }) : send(res, 401, { error: { code: 401, message: 'User not found.' } });
 	}
 	if (req.url !== '/api/v1/chat/completions') return send(res, 404, { error: { code: 404, message: 'Not found' } });

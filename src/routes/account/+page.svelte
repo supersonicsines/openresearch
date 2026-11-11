@@ -1,5 +1,7 @@
 <script lang="ts">
-	import { refreshAll } from '$app/navigation';
+	import { onMount } from 'svelte';
+	import { refreshAll, replaceState } from '$app/navigation';
+	import { page } from '$app/state';
 	import { postJson } from '#lib/client.ts';
 	import Avatar from '#lib/components/Avatar.svelte';
 	import Dialog from '#lib/components/Dialog.svelte';
@@ -13,6 +15,18 @@
 	let replacing = $state(false);
 	let confirmOpen = $state(false);
 	let error = $state('');
+	/** How an attempt to connect OpenRouter ended, where the visitor has just come back from one. */
+	let keyOutcome = $state<string | null>(null);
+
+	onMount(() => {
+		keyOutcome = page.url.searchParams.get('openrouter');
+		if (!keyOutcome) return;
+		try {
+			replaceState('/account', page.state);
+		} catch {
+			history.replaceState(history.state, '', '/account');
+		}
+	});
 
 	const STATUS: Record<string, string> = {
 		queued: 'Waiting to begin',
@@ -31,6 +45,13 @@
 		confirmOpen = false;
 		await refreshAll();
 		busyKey = false;
+	}
+
+	async function withdraw(proposalId: number) {
+		error = '';
+		const { ok, data: reply } = await postJson(`/api/proposals/${proposalId}/pledge`, {}, 'DELETE');
+		if (!ok) error = reply.message ?? 'The pledge could not be withdrawn.';
+		await refreshAll();
 	}
 
 	async function stop(publicId: string) {
@@ -86,10 +107,41 @@
 				<button class="btn btn-danger btn-small" type="button" disabled={busyKey} onclick={() => (confirmOpen = true)}>Remove key</button>
 			</div>
 		{:else}
-			<div ><KeyForm onsaved={() => (replacing = false)} /></div>
+			<div><KeyForm onsaved={() => (replacing = false)} returnTo="/account" outcome={keyOutcome} /></div>
 			{#if replacing}
 				<button class="btn btn-quiet btn-small cancel" type="button" onclick={() => (replacing = false)}>Keep the current key</button>
 			{/if}
+		{/if}
+	</section>
+
+	<section>
+		<h2 class="serif">Pledges</h2>
+		{#if data.pledges.length === 0}
+			<p class="muted">No pledges stand on this account.</p>
+		{:else}
+			<ul class="donations pledges">
+				{#each data.pledges as g (g.id)}
+					<li>
+						<div class="line">
+							<a class="title serif" href="/p/{g.slug}#next">{g.question}</a>
+							<span class="figures sum">{money(g.amount_micro)}</span>
+						</div>
+						<div class="line small muted">
+							<span>
+								{#if g.status === 'standing'}
+									Standing. Nothing is charged unless this question leads when its round closes.
+								{:else}
+									Not met. {g.reason}
+								{/if}
+								{shortModelName(g.model_name)}, {timeAgo(g.created_at)}.
+							</span>
+							{#if g.status === 'standing'}
+								<button class="btn btn-quiet btn-small" type="button" onclick={() => withdraw(g.proposal_id)}>Withdraw</button>
+							{/if}
+						</div>
+					</li>
+				{/each}
+			</ul>
 		{/if}
 	</section>
 
@@ -108,6 +160,7 @@
 						<div class="line small muted">
 							<span>
 								{STATUS[d.status]}{d.end_reason ? `. ${d.end_reason}` : '.'}
+								{#if d.question}Pledged towards a question that led its round.{/if}
 								{shortModelName(d.model_name)}, {d.run_count} {d.run_count === 1 ? 'run' : 'runs'}, {timeAgo(d.created_at)}.
 							</span>
 							{#if d.status === 'queued' || d.status === 'running'}

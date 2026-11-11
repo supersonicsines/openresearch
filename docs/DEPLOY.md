@@ -61,6 +61,7 @@ npm run preflight  # must report that nothing is blocking a launch
 | `CONTACT_EMAIL` | Shown on the terms and privacy pages |
 | `MAX_PROMPTS_PER_HOUR` | Flood limit per account. Default 20, and `0` removes it |
 | `MAX_ACTIVE_PROJECTS` | Projects researched at once. Default 16. **`0` pauses all research** |
+| `ROUND_MINUTES` | How long a round stays open after its first pledge. Default 1440, which is one day. Less than 10 is refused |
 | `DATA_DIR` | Default `data`, inside the app folder |
 
 The server refuses to start on a public address if something dangerous or essential is wrong: plain

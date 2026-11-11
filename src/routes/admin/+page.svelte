@@ -47,6 +47,31 @@
 	</section>
 
 	<section>
+		<h2 class="serif">Proposed questions</h2>
+		{#if data.proposals.length === 0}
+			<p class="muted">No questions have been proposed.</p>
+		{:else}
+			<ul class="rows">
+				{#each data.proposals as proposal (proposal.id)}
+					<li>
+						<p class="serif">{proposal.question}</p>
+						<p class="small muted">
+							On <a class="link" href="/p/{proposal.slug}">{proposal.title}</a>, by @{proposal.handle}, {timeAgo(proposal.created_at)}.
+							{proposal.status === 'won' ? 'It led its round.' : 'It is listed.'}
+						</p>
+						<div class="actions">
+							<form method="POST" action="?/unlist" use:enhance>
+								<input type="hidden" name="id" value={proposal.id} />
+								<button class="btn btn-danger btn-small" type="submit">Remove the question</button>
+							</form>
+						</div>
+					</li>
+				{/each}
+			</ul>
+		{/if}
+	</section>
+
+	<section>
 		<h2 class="serif">Prompts</h2>
 		<ul class="rows">
 			{#each data.projects as project (project.id)}

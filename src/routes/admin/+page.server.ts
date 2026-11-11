@@ -1,6 +1,7 @@
 import { error, fail } from '@sveltejs/kit';
 import {
 	hideProject,
+	hideProposal,
 	isAdmin,
 	purgeProject,
 	resolveReport,
@@ -10,6 +11,7 @@ import {
 	suspendUser
 } from '#lib/server/moderation.ts';
 import { adminProjects, openReports, totals } from '#lib/server/queries.ts';
+import { adminProposals } from '#lib/server/rounds.ts';
 import type { Actions, PageServerLoad } from './$types';
 
 // The page does not reveal that it exists to anyone else.
@@ -19,7 +21,7 @@ function guard(locals: App.Locals) {
 
 export const load: PageServerLoad = ({ locals }) => {
 	guard(locals);
-	return { reports: openReports(), projects: adminProjects(), totals: totals() };
+	return { reports: openReports(), projects: adminProjects(), proposals: adminProposals(), totals: totals() };
 };
 
 const text = (form: FormData, name: string) => String(form.get(name) ?? '').trim();
@@ -34,6 +36,13 @@ export const actions: Actions = {
 		}
 		resolveReportsFor(slug);
 		return { message: 'The project has been removed from public view.' };
+	},
+	unlist: async ({ request, locals }) => {
+		guard(locals);
+		if (!hideProposal(Number(text(await request.formData(), 'id')))) {
+			return fail(404, { message: 'That question could not be found.' });
+		}
+		return { message: 'The question has been removed from public view, and its pledges have been released.' };
 	},
 	restore: async ({ request, locals }) => {
 		guard(locals);

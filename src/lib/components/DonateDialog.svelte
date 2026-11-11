@@ -1,3 +1,15 @@
+<script lang="ts" module>
+	/** A question in the round. With one given, the dialog records a pledge towards it, not a donation. */
+	export type PledgeTarget = {
+		/** Null for the standing question, until it has been backed for the first time. */
+		id: number | null;
+		question: string;
+		kind: 'question' | 'audit';
+		/** What the visitor has already pledged towards it. */
+		mine: number;
+	};
+</script>
+
 <script lang="ts">
 	import { refreshAll } from '$app/navigation';
 	import { page } from '$app/state';
@@ -22,14 +34,26 @@
 		slug,
 		signedIn,
 		keyInfo,
-		ondonated
+		target = null,
+		keyOutcome = null,
+		ondonated,
+		onpledged
 	}: {
 		open?: boolean;
 		slug: string;
 		signedIn: boolean;
 		keyInfo: KeyInfo | null;
+		target?: PledgeTarget | null;
+		/** How an attempt to connect OpenRouter ended, where the visitor has just come back from one. */
+		keyOutcome?: string | null;
 		ondonated: (publicId: string, amountMicro: number) => void;
+		onpledged?: (amountMicro: number) => void;
 	} = $props();
+
+	/** The page is returned to with the same dialog open, after GitHub or OpenRouter has been connected. */
+	const returnTo = $derived(
+		`${page.url.pathname}?${target ? `back=${target.id ?? 'audit'}` : 'donate=1'}`
+	);
 
 	const PRESETS = [1, 5, 20];
 	const SUGGESTED = [
@@ -97,12 +121,34 @@
 		return `$${(price * 1_000_000).toFixed(2)}`;
 	}
 
+	async function pledge(to: PledgeTarget) {
+		let id = to.id;
+		if (id === null) {
+			// The standing question is listed the first time that it is backed.
+			const listed = await postJson<{ id: number }>(`/api/projects/${slug}/proposals`, { kind: 'audit' });
+			if (!listed.ok) {
+				error = listed.data.message ?? 'The pledge could not be recorded.';
+				return;
+			}
+			id = listed.data.id;
+		}
+		const { ok, data } = await postJson(`/api/proposals/${id}/pledge`, { amountMicro, model: chosen });
+		if (!ok) {
+			error = data.message ?? 'The pledge could not be recorded.';
+			return;
+		}
+		await refreshAll();
+		open = false;
+		onpledged?.(amountMicro);
+	}
+
 	async function donate(event: SubmitEvent) {
 		event.preventDefault();
 		if (busy || !amountMicro || !chosen) return;
 		busy = true;
 		error = '';
 		try {
+			if (target) return await pledge(target);
 			const { ok, data } = await postJson<{ publicId: string }>(`/api/projects/${slug}/donations`, {
 				amountMicro,
 				model: chosen
@@ -115,19 +161,22 @@
 			open = false;
 			ondonated(data.publicId, amountMicro);
 		} catch {
-			error = 'The donation could not be sent. The connection should be examined and the attempt repeated.';
+			error = target
+				? 'The pledge could not be sent. The connection should be examined and the attempt repeated.'
+				: 'The donation could not be sent. The connection should be examined and the attempt repeated.';
 		} finally {
 			busy = false;
 		}
 	}
 </script>
 
-<Dialog bind:open title="Donate to this project">
+<Dialog bind:open title={target ? 'Back this question' : 'Donate to this project'}>
+	{#if target}<p class="serif asked">{target.question}</p>{/if}
 	{#if !signedIn}
-		<p class="lead">A GitHub account must be connected before a donation can be made.</p>
+		<p class="lead">A GitHub account must be connected before a {target ? 'pledge' : 'donation'} can be made.</p>
 		<a
 			class="btn btn-primary btn-wide"
-			href={connectHref(page.url.pathname)}
+			href={connectHref(returnTo)}
 			data-sveltekit-reload
 			data-sveltekit-preload-data="false"
 		>
@@ -135,8 +184,8 @@
 		</a>
 	{:else if !keyInfo}
 		<div in:fade={{ duration: 160 }}>
-			<p class="lead">Donations are drawn from an OpenRouter key. A key must be added first.</p>
-			<KeyForm submitLabel="Save key and continue" />
+			<p class="lead">{target ? 'Pledges' : 'Donations'} are drawn from an OpenRouter key. A key must be added first.</p>
+			<KeyForm submitLabel="Save key and continue" {returnTo} outcome={keyOutcome} />
 		</div>
 	{:else}
 		<form onsubmit={donate} class="form" in:fade={{ duration: 160 }}>
@@ -228,10 +277,17 @@
 						{:else}
 							This may cover less than one typical run of {shortModelName(current.name)}.
 						{/if}
-						Any part left unspent is not charged.
+						{#if target}
+							Nothing is charged unless this question leads when the round closes.
+						{:else}
+							Any part left unspent is not charged.
+						{/if}
 					</p>
 				{/if}
-				<p class="small muted keyline">Charged to the key {keyInfo.preview}{keyInfo.remaining_micro != null ? `, with ${money(keyInfo.remaining_micro)} remaining on its limit` : ''}.</p>
+				{#if target && target.mine > 0}
+					<p class="small muted">The pledge of {money(target.mine)} already made towards this question is replaced.</p>
+				{/if}
+				<p class="small muted keyline">{target ? 'Drawn from' : 'Charged to'} the key {keyInfo.preview}{keyInfo.remaining_micro != null ? `, with ${money(keyInfo.remaining_micro)} remaining on its limit` : ''}.</p>
 			</div>
 
 			{#if error}<p class="error" role="alert">{error}</p>{/if}
@@ -241,7 +297,11 @@
 				type="submit"
 				disabled={busy || !amountMicro || !chosen || tooSmall || overLimit}
 			>
-				{busy ? 'Recording the donation' : amountMicro ? `Donate ${money(amountMicro)}` : 'Donate'}
+				{#if target}
+					{busy ? 'Recording the pledge' : amountMicro ? `Pledge ${money(amountMicro)}` : 'Pledge'}
+				{:else}
+					{busy ? 'Recording the donation' : amountMicro ? `Donate ${money(amountMicro)}` : 'Donate'}
+				{/if}
 			</button>
 		</form>
 	{/if}
@@ -251,6 +311,14 @@
 	.lead {
 		margin-bottom: 16px;
 		color: var(--ink-2);
+	}
+	.asked {
+		margin-bottom: 18px;
+		padding-left: 14px;
+		border-left: 2px solid var(--rule-2);
+		overflow-wrap: anywhere;
+		font-size: 1.125rem;
+		line-height: 1.35;
 	}
 	.form {
 		display: grid;

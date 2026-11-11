@@ -4,7 +4,9 @@
 
 A public board of research prompts. Any prompt of up to 250 words may be listed by anyone with a GitHub
 account, and a public git repository is created for it. Research on that prompt is paid for by
-whoever chooses to donate from their own OpenRouter key. Every run is committed to the repository as
+whoever chooses to donate from their own OpenRouter key. The next question on a project may be proposed
+by anyone, and pledges are made towards it: once a day the question with the most pledged is researched
+with those pledges, and nothing is charged for the others. Every run is committed to the repository as
 text and as HTML. Projects and donors are ranked on two leaderboards, and shareable cards can be
 generated for X.
 
@@ -28,7 +30,8 @@ The site is opened in Chrome at <http://localhost:3000> with sample projects, on
 default browser is used where Chrome is not installed, and `npm run demo -- --no-open` leaves the
 browser alone. Sign-in and model responses are simulated by a stand-in server, and small donations
 keep arriving so that the live parts of the page can be seen. Any handle may be used, and keys
-beginning `sk-or-v1-capped` are accepted. Sample data is kept in `data-demo/`, which may be deleted at
+beginning `sk-or-v1-capped` are accepted. "Connect OpenRouter" leads to a stand-in for OpenRouter's own
+page, where a key is approved without being copied. Sample data is kept in `data-demo/`, which may be deleted at
 any time.
 
 ## Running it properly

@@ -1,9 +1,26 @@
 <script lang="ts">
 	import { refreshAll } from '$app/navigation';
-	import { postJson } from '#lib/client.ts';
+	import { connectKeyHref, postJson } from '#lib/client.ts';
 	import { money } from '#lib/format.ts';
 
-	let { onsaved, submitLabel = 'Save key' }: { onsaved?: () => void; submitLabel?: string } = $props();
+	let {
+		onsaved,
+		submitLabel = 'Save key',
+		returnTo = '/account',
+		outcome = null
+	}: {
+		onsaved?: () => void;
+		submitLabel?: string;
+		/** Where OpenRouter sends the visitor back to, once a key has been approved there. */
+		returnTo?: string;
+		/** How an attempt to connect ended, where the visitor has just come back from one. */
+		outcome?: string | null;
+	} = $props();
+
+	const OUTCOMES: Record<string, string> = {
+		declined: 'The connection was declined on OpenRouter. It may be attempted again, or a key may be pasted below.',
+		failed: 'The connection to OpenRouter could not be completed. It may be attempted again, or a key may be pasted below.'
+	};
 
 	let key = $state('');
 	let acknowledged = $state(false);
@@ -50,11 +67,26 @@
 <form onsubmit={submit} class="form">
 	<div class="warning" role="note">
 		<strong>A spending limit should be set on this key.</strong>
-		A key without a limit can spend the entire balance of the OpenRouter account. A new key should be
-		created for this site at
-		<a href="https://openrouter.ai/settings/keys" target="_blank" rel="noopener noreferrer">openrouter.ai/settings/keys</a>,
-		with a credit limit that would be acceptable to lose.
+		A key without a limit can spend the entire balance of the OpenRouter account. Whether the key is
+		created by connecting or pasted, it should carry a credit limit that would be acceptable to lose.
+		Limits are set at
+		<a href="https://openrouter.ai/settings/keys" target="_blank" rel="noopener noreferrer">openrouter.ai/settings/keys</a>.
 	</div>
+
+	<div class="connect">
+		<a
+			class="btn btn-primary btn-wide"
+			href={connectKeyHref(returnTo)}
+			data-sveltekit-reload
+			data-sveltekit-preload-data="false"
+		>Connect OpenRouter</a>
+		<p class="note small muted">
+			A key is created for this site on OpenRouter's own page, and nothing has to be copied.
+		</p>
+		{#if outcome && OUTCOMES[outcome]}<p class="error" role="alert">{OUTCOMES[outcome]}</p>{/if}
+	</div>
+
+	<p class="or small muted"><span>or</span></p>
 
 	<div>
 		<label class="label" for="or-key">OpenRouter API key</label>
@@ -78,8 +110,8 @@
 			}}
 		/>
 		<p class="note small muted">
-			The key is encrypted when stored and is used only for donations made from this account. It may
-			be removed at any time.
+			The key is encrypted when stored and is used only for donations and pledges made from this account.
+			It may be removed at any time.
 		</p>
 	</div>
 
@@ -97,7 +129,7 @@
 	{#if error}<p class="error" role="alert">{error}</p>{/if}
 	{#if capped}<p class="small muted" role="status">The key has been saved. Its limit is {money(capped.limit)}.</p>{/if}
 
-	<button class="btn btn-primary btn-wide" type="submit" disabled={busy || !key.trim() || (needsAck && !acknowledged)}>
+	<button class="btn btn-quiet btn-wide" type="submit" disabled={busy || !key.trim() || (needsAck && !acknowledged)}>
 		{#if busy}Checking the key{:else if needsAck}Save key without a limit{:else}{submitLabel}{/if}
 	</button>
 </form>
@@ -113,6 +145,22 @@
 	}
 	.note {
 		margin-top: 8px;
+	}
+	.connect .error {
+		margin-top: 8px;
+	}
+	/* A rule on either side of the word, so that the two ways of adding a key read as alternatives. */
+	.or {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+	}
+	.or::before,
+	.or::after {
+		content: '';
+		flex: 1;
+		height: 1px;
+		background: var(--rule);
 	}
 	.no-limit {
 		padding: 14px 16px;

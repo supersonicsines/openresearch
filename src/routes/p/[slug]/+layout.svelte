@@ -1,7 +1,10 @@
 <script lang="ts">
+	import { onMount, setContext, tick } from 'svelte';
+	import { replaceState } from '$app/navigation';
 	import { page } from '$app/state';
 	import { fade, fly } from 'svelte/transition';
-	import DonateDialog from '#lib/components/DonateDialog.svelte';
+	import DonateDialog, { type PledgeTarget } from '#lib/components/DonateDialog.svelte';
+	import { ROUND_CONTEXT, type RoundContext } from '#lib/components/RoundPanel.svelte';
 	import Handle from '#lib/components/Handle.svelte';
 	import Meter from '#lib/components/Meter.svelte';
 	import ReportDialog from '#lib/components/ReportDialog.svelte';
@@ -19,17 +22,67 @@
 	let reportOpen = $state(false);
 	/** Set after a donation, so that the share dialog offers that donation's own card. */
 	let justDonated = $state<{ id: string; amount: number } | null>(null);
+	/** Set after a pledge, in the same way. */
+	let justPledged = $state<number | null>(null);
+	/** The question that the dialog records a pledge towards. With none, it records a donation. */
+	let target = $state<PledgeTarget | null>(null);
+	/** How an attempt to connect OpenRouter ended, where the visitor has just come back from one. */
+	let keyOutcome = $state<string | null>(null);
 
 	let toastTimer: ReturnType<typeof setTimeout>;
 
-	function donated(id: string, amount: number) {
-		justDonated = { id, amount };
+	function announce() {
 		clearTimeout(toastTimer);
 		toastTimer = setTimeout(() => {
 			// A card that is being viewed is not taken away.
-			if (!shareOpen) justDonated = null;
+			if (shareOpen) return;
+			justDonated = null;
+			justPledged = null;
 		}, 12_000);
 	}
+
+	function donated(id: string, amount: number) {
+		justPledged = null;
+		justDonated = { id, amount };
+		announce();
+	}
+
+	function pledged(amount: number) {
+		justDonated = null;
+		justPledged = amount;
+		announce();
+	}
+
+	function donate() {
+		target = null;
+		donateOpen = true;
+	}
+
+	setContext<RoundContext>(ROUND_CONTEXT, {
+		back(question) {
+			target = question;
+			donateOpen = true;
+		}
+	});
+
+	// A visitor sent away to connect GitHub or OpenRouter is returned with the dialog open again. The
+	// marks that say so are then taken out of the address, so that they are not shared or acted on twice.
+	onMount(() => {
+		const params = page.url.searchParams;
+		keyOutcome = params.get('openrouter');
+		if (params.get('donate')) donate();
+		const marks = ['donate', 'back', 'propose', 'openrouter'].filter((name) => params.has(name));
+		if (marks.length === 0) return;
+		const clean = new URL(page.url.href);
+		for (const name of marks) clean.searchParams.delete(name);
+		tick().then(() => {
+			try {
+				replaceState(clean, page.state);
+			} catch {
+				history.replaceState(history.state, '', clean);
+			}
+		});
+	});
 
 	const project = $derived(data.project);
 	const base = $derived(`/p/${project.slug}`);
@@ -53,7 +106,9 @@
 	const sharePost = $derived(
 		justDonated
 			? `A donation of up to ${money(justDonated.amount)} has been pledged towards this research on OpenResearch.`
-			: project.spent > 0
+			: justPledged
+				? `${money(justPledged)} has been pledged towards the next question on ${reference(project.id)} on OpenResearch.`
+				: project.spent > 0
 				? `${reference(project.id)} has raised ${money(project.spent)} on OpenResearch.`
 				: `${reference(project.id)} has been listed on OpenResearch, and it has not yet been funded.`
 	);
@@ -132,12 +187,13 @@
 				<div class="history"><Spark points={data.series} height={56} interactive /></div>
 			{/if}
 			<div class="buttons">
-				<button class="btn btn-signal btn-wide" type="button" onclick={() => (donateOpen = true)}>Donate</button>
+				<button class="btn btn-signal btn-wide" type="button" onclick={donate}>Donate</button>
 				<button
 					class="btn btn-quiet btn-wide"
 					type="button"
 					onclick={() => {
 						justDonated = null;
+						justPledged = null;
 						shareOpen = true;
 					}}
 				>Generate a card</button>
@@ -156,12 +212,24 @@
 	</div>
 </article>
 
-{#if justDonated}
+{#if justDonated || justPledged}
 	<div class="toast" role="status" in:fly={{ y: 12, duration: 240 }} out:fade={{ duration: 120 }}>
-		<p>A donation of up to {money(justDonated.amount)} has been recorded.</p>
+		{#if justDonated}
+			<p>A donation of up to {money(justDonated.amount)} has been recorded.</p>
+		{:else if justPledged}
+			<p>A pledge of {money(justPledged)} has been recorded.</p>
+		{/if}
 		<div>
 			<button class="btn btn-small toast-share" type="button" onclick={() => (shareOpen = true)}>Generate a card</button>
-			<button class="dismiss" type="button" aria-label="Dismiss" onclick={() => (justDonated = null)}>
+			<button
+				class="dismiss"
+				type="button"
+				aria-label="Dismiss"
+				onclick={() => {
+					justDonated = null;
+					justPledged = null;
+				}}
+			>
 				<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9" /></svg>
 			</button>
 		</div>
@@ -169,7 +237,7 @@
 {/if}
 
 <div class="sticky" aria-hidden={donateOpen}>
-	<button class="btn btn-signal btn-wide" type="button" onclick={() => (donateOpen = true)}>Donate</button>
+	<button class="btn btn-signal btn-wide" type="button" onclick={donate}>Donate</button>
 </div>
 
 <ReportDialog bind:open={reportOpen} slug={project.slug} />
@@ -179,12 +247,15 @@
 	slug={project.slug}
 	signedIn={Boolean(data.user)}
 	keyInfo={data.key}
+	{target}
+	{keyOutcome}
 	ondonated={donated}
+	onpledged={pledged}
 />
 
 <ShareDialog
 	bind:open={shareOpen}
-	title={justDonated ? 'Share this donation' : 'Share this project'}
+	title={justDonated ? 'Share this donation' : justPledged ? 'Share this pledge' : 'Share this project'}
 	cardUrl={shareCard}
 	shareUrl={shareLink}
 	postText={sharePost}

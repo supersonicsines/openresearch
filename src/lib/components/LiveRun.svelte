@@ -11,6 +11,7 @@
 
 	let live = $state<Live | null>(null);
 	let settling: ReturnType<typeof setTimeout> | undefined;
+	let rounding: ReturnType<typeof setTimeout> | undefined;
 
 	const PHASES: Record<Phase, string> = {
 		starting: 'The run is being started.',
@@ -49,6 +50,10 @@
 				live.phase = event.phase;
 			} else if (event.type === 'delta' && live) {
 				live.text += event.text;
+			} else if (event.type === 'round') {
+				// A question, a pledge or the settling of a round. The figures on the page are read again.
+				clearTimeout(rounding);
+				rounding = setTimeout(() => refreshAll(), 250);
 			} else if (event.type === 'end') {
 				// The block stays until the page has been updated. If another run follows at once,
 				// it takes over the same space, so the page does not jump between runs.
@@ -62,6 +67,7 @@
 		};
 		return () => {
 			clearTimeout(settling);
+			clearTimeout(rounding);
 			source.close();
 		};
 	});

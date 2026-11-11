@@ -21,3 +21,8 @@ export async function postJson<T = Record<string, unknown>>(
 export function connectHref(next: string): string {
 	return `/auth/github?next=${encodeURIComponent(next)}`;
 }
+
+/** The same for OpenRouter, which creates a key for this site and sends the visitor back to `next`. */
+export function connectKeyHref(next: string): string {
+	return `/auth/openrouter?next=${encodeURIComponent(next)}`;
+}

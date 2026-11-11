@@ -1,5 +1,8 @@
 <script lang="ts">
+	import Countdown from '#lib/components/Countdown.svelte';
 	import LiveRun from '#lib/components/LiveRun.svelte';
+	import RoundPanel from '#lib/components/RoundPanel.svelte';
+	import { money } from '#lib/format.ts';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -10,19 +13,19 @@
 
 <LiveRun slug={project.slug} prompt={project.prompt} queued={Boolean(project.active)} />
 
+{#if data.round.closesAt && project.findings_html}
+	<!-- With findings above it, the round is far down the page, so it is announced here. -->
+	<p class="announce small">
+		<span class="tag"><span class="dot" aria-hidden="true"></span>Round {data.round.round}</span>
+		<span>
+			<Countdown closesAt={data.round.closesAt} now={data.now} />, with {money(data.round.pledged)} pledged.
+			<a class="link" href="#next">See the questions</a>
+		</span>
+	</p>
+{/if}
+
 {#if project.findings_html}
 	<div class="prose">{@html project.findings_html}</div>
-
-	{#if questions.length}
-		<section class="open">
-			<h2 class="serif">Open questions</h2>
-			<ol class="prose">
-				{#each questions as question}
-					<li>{question}</li>
-				{/each}
-			</ol>
-		</section>
-	{/if}
 
 	<p class="formats small muted">
 		The findings may be read as
@@ -41,15 +44,25 @@
 	</div>
 {/if}
 
+<RoundPanel
+	slug={project.slug}
+	round={data.round}
+	now={data.now}
+	signedIn={Boolean(data.user)}
+	suggestions={project.findings_html ? questions : []}
+/>
+
 <style>
-	.open {
-		margin-top: 48px;
-		padding-top: 28px;
-		border-top: 1px solid var(--rule);
-	}
-	h2 {
-		font-size: 1.375rem;
-		margin-bottom: 14px;
+	.announce {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: 4px 12px;
+		margin-bottom: 24px;
+		padding: 10px 14px;
+		border: 1px solid var(--rule);
+		border-radius: 10px;
+		background: var(--surface);
 	}
 	.formats {
 		margin-top: 40px;

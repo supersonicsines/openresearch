@@ -15,7 +15,9 @@ export type ProjectEvent =
 	| { type: 'run'; live: LiveRun }
 	| { type: 'phase'; phase: Phase }
 	| { type: 'delta'; text: string }
-	| { type: 'end' };
+	| { type: 'end' }
+	/** A question was proposed, a pledge was made or withdrawn, or a round was settled. */
+	| { type: 'round' };
 
 type Bus = { emitter: EventEmitter; live: Map<number, LiveRun>; closed?: boolean };
 const holder = globalThis as unknown as { __osBus?: Bus };
@@ -49,6 +51,10 @@ export function publishDelta(projectId: number, text: string) {
 export function publishEnd(projectId: number) {
 	bus.live.delete(projectId);
 	bus.emitter.emit(channel(projectId), { type: 'end' } satisfies ProjectEvent);
+}
+
+export function publishRound(projectId: number) {
+	bus.emitter.emit(channel(projectId), { type: 'round' } satisfies ProjectEvent);
 }
 
 /** onClose is called when the server stops, so that no live connection keeps it running. */

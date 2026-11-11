@@ -69,6 +69,36 @@ export async function checkKey(key: string): Promise<KeyInfo> {
 	};
 }
 
+/**
+ * The page on OpenRouter where a visitor approves a key for this site, so that nothing has to be copied.
+ * No registration with OpenRouter is involved: the site is known to it by the address it is sent back to.
+ */
+export function connectUrl(callbackUrl: string, challenge: string, state: string): string {
+	const url = new URL('/auth', new URL(config.openRouterBase).origin);
+	url.search = new URLSearchParams({
+		callback_url: callbackUrl,
+		code_challenge: challenge,
+		code_challenge_method: 'S256',
+		state,
+		key_label: 'OpenResearch'
+	}).toString();
+	return url.toString();
+}
+
+/** Exchanges the code that OpenRouter sent back for the key it has created. The code is good for ten minutes, once. */
+export async function exchangeCode(code: string, verifier: string): Promise<string> {
+	const res = await fetch(`${config.openRouterBase}/auth/keys`, {
+		method: 'POST',
+		headers: headers(),
+		body: JSON.stringify({ code, code_verifier: verifier, code_challenge_method: 'S256' }),
+		signal: AbortSignal.timeout(15_000)
+	});
+	if (!res.ok) throw await errorFrom(res);
+	const body = (await res.json()) as { key?: unknown };
+	if (typeof body.key !== 'string') throw new OpenRouterError(502, 'OpenRouter did not return a key.');
+	return body.key;
+}
+
 export type Model = {
 	id: string;
 	name: string;

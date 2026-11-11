@@ -1,6 +1,7 @@
 import { looksLikeKey, deleteKey, getPublicKey, saveKey } from '#lib/server/keys.ts';
 import { HOUR, hit } from '#lib/server/limits.ts';
 import { checkKey, OpenRouterError } from '#lib/server/openrouter.ts';
+import { releasePledgesForUser } from '#lib/server/rounds.ts';
 import { stopDonationsForUser } from '#lib/server/worker.ts';
 import type { RequestHandler } from './$types';
 
@@ -35,6 +36,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 	// A donation was agreed against the key that was held at the time, so it does not move to a new one.
 	if (getPublicKey(locals.user.id)) {
 		stopDonationsForUser(locals.user.id, 'The OpenRouter key was replaced.');
+		releasePledgesForUser(locals.user.id, 'The OpenRouter key was replaced.');
 	}
 	saveKey(locals.user.id, key, info);
 	return Response.json({
@@ -48,6 +50,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 export const DELETE: RequestHandler = ({ locals }) => {
 	if (!locals.user) return reply(401, 'A GitHub account must be connected first.');
 	stopDonationsForUser(locals.user.id, 'The OpenRouter key was removed.');
+	releasePledgesForUser(locals.user.id, 'The OpenRouter key was removed.');
 	deleteKey(locals.user.id);
 	return Response.json({ status: 'removed' });
 };

@@ -113,7 +113,7 @@ export function ruleFor(method: string, path: string): Rule | null {
 	if (path.endsWith('/archive.zip')) return { name: 'zip', limit: 12, windowMs: MINUTE };
 	// A clone asks for each object in turn, so this has to allow a great many requests.
 	if (path.startsWith('/git/')) return { name: 'git', limit: 3_000, windowMs: MINUTE };
-	if (path.startsWith('/auth/github')) return { name: 'auth', limit: 30, windowMs: MINUTE };
+	if (path.startsWith('/auth/github') || path.startsWith('/auth/openrouter')) return { name: 'auth', limit: 30, windowMs: MINUTE };
 	if (path === '/api/activity') return { name: 'activity', limit: 120, windowMs: MINUTE };
 	if (method !== 'GET' && method !== 'HEAD') return { name: 'write', limit: 120, windowMs: MINUTE };
 	return { name: 'read', limit: 1_200, windowMs: MINUTE };

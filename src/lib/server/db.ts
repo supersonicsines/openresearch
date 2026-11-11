@@ -127,6 +127,44 @@ const MIGRATIONS: string[] = [
 	`,
 	// Accounts are identified by GitHub, in place of X.
 	`ALTER TABLE users RENAME COLUMN x_id TO github_id;`,
+	// Rounds. A question is proposed, pledges are made towards it, and the pledges on the question that
+	// leads when the round closes become donations. Nothing existing is rebuilt: a pledge is kept in its
+	// own table until then, and a donation that came from one records the question it was made for.
+	`
+	ALTER TABLE projects ADD COLUMN round INTEGER NOT NULL DEFAULT 1;
+	ALTER TABLE projects ADD COLUMN round_closes_at INTEGER;
+	CREATE TABLE proposals (
+		id INTEGER PRIMARY KEY,
+		project_id INTEGER NOT NULL REFERENCES projects(id),
+		user_id INTEGER NOT NULL REFERENCES users(id),
+		kind TEXT NOT NULL CHECK (kind IN ('question','audit')),
+		question TEXT NOT NULL,
+		status TEXT NOT NULL CHECK (status IN ('open','won','withdrawn','removed')),
+		round INTEGER,
+		created_at INTEGER NOT NULL,
+		settled_at INTEGER
+	);
+	CREATE INDEX proposals_project ON proposals(project_id, status);
+	CREATE INDEX proposals_created ON proposals(created_at);
+	CREATE TABLE pledges (
+		id INTEGER PRIMARY KEY,
+		proposal_id INTEGER NOT NULL REFERENCES proposals(id),
+		user_id INTEGER NOT NULL REFERENCES users(id),
+		model TEXT NOT NULL,
+		model_name TEXT NOT NULL,
+		amount_micro INTEGER NOT NULL,
+		status TEXT NOT NULL CHECK (status IN ('standing','called','withdrawn','lapsed','released')),
+		reason TEXT,
+		donation_id INTEGER REFERENCES donations(id),
+		created_at INTEGER NOT NULL,
+		settled_at INTEGER
+	);
+	CREATE INDEX pledges_proposal ON pledges(proposal_id, status);
+	CREATE INDEX pledges_user ON pledges(user_id, id);
+	CREATE INDEX pledges_created ON pledges(created_at);
+	ALTER TABLE donations ADD COLUMN proposal_id INTEGER REFERENCES proposals(id);
+	CREATE INDEX projects_round ON projects(round_closes_at);
+	`,
 ];
 
 const holder = globalThis as unknown as { __osDb?: DatabaseSync };

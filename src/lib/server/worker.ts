@@ -35,6 +35,7 @@ import {
 import type { DonationRow } from './queries.ts';
 import { renderMarkdown, standaloneHtml } from './render.ts';
 import { commitFiles } from './repo.ts';
+import { settleDue } from './rounds.ts';
 import {
 	appendReport,
 	editorSystem,
@@ -124,6 +125,12 @@ function drain() {
 
 export function kick() {
 	if (state.stopping) return;
+	// A round that has closed turns its leading pledges into donations, which are then found below.
+	try {
+		settleDue();
+	} catch (err) {
+		console.error('Rounds could not be examined:', scrub(String(err)));
+	}
 	const open = all<{ project_id: number }>(
 		`SELECT project_id, MIN(id) AS first FROM donations
 		WHERE status IN ('queued','running') GROUP BY project_id ORDER BY first`
@@ -340,14 +347,36 @@ async function runOnce(donation: DonationRow, signal: AbortSignal) {
 		return finish(donation.id, 'completed', 'The donation has been spent.');
 	}
 
+	// A donation that came from a round was pledged towards one question, which is asked before any other.
+	const proposal = donation.proposal_id
+		? get<{ id: number; question: string; status: string; handle: string }>(
+				`SELECT o.id, o.question, o.status, u.handle FROM proposals o JOIN users u ON u.id = o.user_id WHERE o.id = ?`,
+				donation.proposal_id
+			)
+		: undefined;
+	if (proposal?.status === 'removed') {
+		return finish(donation.id, 'failed', 'The question was removed by the operator of this site.');
+	}
+	// Set until that question has been put, which is on the first run of the first of its donations.
+	const directed =
+		proposal &&
+		!get<{ id: number }>(
+			`SELECT r.id FROM runs r JOIN donations d ON d.id = r.donation_id WHERE d.proposal_id = ? LIMIT 1`,
+			proposal.id
+		)
+			? proposal
+			: undefined;
+
 	const questions = JSON.parse(project.open_questions) as string[];
 	const lastSeq =
 		get<{ n: number }>('SELECT COALESCE(MAX(seq), 0) AS n FROM runs WHERE project_id = ?', project.id)?.n ?? 0;
 	// A donation's later runs stop when the list runs out. A new donation may always ask what is missing.
-	if (project.findings_md && questions.length === 0 && donation.run_count > 0) {
+	if (!directed && project.findings_md && questions.length === 0 && donation.run_count > 0) {
 		return finish(donation.id, 'completed', 'No open questions remain on this project.');
 	}
-	const question = oneLine(questions[0] ?? (project.findings_md ? REVIEW_QUESTION : project.prompt));
+	const question = oneLine(
+		directed ? directed.question : (questions[0] ?? (project.findings_md ? REVIEW_QUESTION : project.prompt))
+	);
 
 	const info = await withRetry(signal, () => checkKey(key));
 	updateKeyInfo(donation.user_id, info);
@@ -438,7 +467,8 @@ async function runOnce(donation: DonationRow, signal: AbortSignal) {
 		: withSources(body, research.sources);
 
 	let findings = project.findings_md;
-	let nextQuestions = questions.slice(1);
+	// A question that was pledged towards did not come from the list, so nothing is taken off it.
+	let nextQuestions = directed ? questions : questions.slice(1);
 
 	if (!nothingNew) {
 		publishPhase(project.id, 'editing');
@@ -447,6 +477,7 @@ async function runOnce(donation: DonationRow, signal: AbortSignal) {
 			project,
 			donationId: donation.id,
 			report,
+			direction: proposal?.question,
 			key,
 			model,
 			budget: budget - cost,
@@ -477,7 +508,7 @@ async function runOnce(donation: DonationRow, signal: AbortSignal) {
 
 Question: ${question}
 Model: ${model.id}
-Funded by: @${donor.handle}
+${directed ? `Proposed by: @${directed.handle}\n` : ''}Funded by: @${donor.handle}
 Tokens: ${inputTokens} in, ${outputTokens} out
 Cost: $${(cost / 1_000_000).toFixed(6)} USD
 Completed: ${new Date(finishedAt).toISOString()}
@@ -505,7 +536,7 @@ Completed: ${new Date(finishedAt).toISOString()}
 		`Run ${seq}: ${subject}
 
 Question: ${question}
-Funded-by: @${donor.handle}
+${directed ? `Proposed-by: @${directed.handle}\n` : ''}Funded-by: @${donor.handle}
 Model: ${model.id}
 Input-tokens: ${inputTokens}
 Output-tokens: ${outputTokens}
@@ -553,13 +584,19 @@ async function edit(input: {
 	project: ProjectRow;
 	donationId: number;
 	report: string;
+	/** The question that donors chose in a round, where the donation came from one. */
+	direction?: string;
 	key: string;
 	model: Model;
 	budget: number;
 	signal: AbortSignal;
 }): Promise<{ result?: ChatResult; parsed: ReturnType<typeof parseEdited> }> {
 	if (input.signal.aborted) return { parsed: null };
-	const system = editorSystem({ prompt: input.project.prompt, findings: input.project.findings_md });
+	const system = editorSystem({
+		prompt: input.project.prompt,
+		findings: input.project.findings_md,
+		direction: input.direction
+	});
 	const inputTokens = estimateTokens(system + input.report);
 	const tokens = affordableOutputTokens(
 		input.budget,

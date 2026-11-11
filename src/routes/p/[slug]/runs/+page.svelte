@@ -17,6 +17,7 @@
 						<span class="question serif">{run.question}</span>
 						<span class="meta small muted">
 							<span class="who">@{run.handle}</span>
+							{#if run.proposer}<span>proposed by <span class="who">@{run.proposer}</span></span>{/if}
 							<span>{shortModelName(run.model_name)}</span>
 							<span>{timeAgo(run.finished_at)}</span>
 						</span>

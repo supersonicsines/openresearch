@@ -36,6 +36,10 @@ deployed by the `deploy` job, so every push restarts the site, and runs in progr
   key, capped at $3, and every step passed. What was checked is recorded at the top of `docs/LAUNCH.md`. Four
   prompts were funded on launch day so that the board is not empty. No real key should be used without the
   operator's say.
+- **Rounds and the OpenRouter connection were added on 11 November 2026**, at the operator's request, after
+  feedback that pasting a key lost people and that the thread should be steered by those who fund it. They were
+  tested against the stand-ins only. What was and was not checked is at the top of `docs/LAUNCH.md`. **The
+  connection has never been made against the real OpenRouter**, so the operator is to try it once on the live site.
 - What is left is in `docs/LAUNCH.md`: the operator is to read the terms and privacy pages, and the site is to be
   checked on a physical iPhone and in desktop Safari.
 - Hosting: Railway, at https://openresearch.click, with one service built from the `Dockerfile`, one replica and a
@@ -51,8 +55,17 @@ deployed by the `deploy` job, so every push restarts the site, and runs in progr
 
 These were weighed and decided, so they should not be reopened unless the operator raises them.
 
-- **Pasted OpenRouter keys**, not OAuth, with a very obvious warning about setting a spending limit.
-- **Prompts publish without review.** Reports and `/admin` takedowns exist, but nothing is filtered in advance.
+- **Donors' own OpenRouter keys, and no money held by the site.** "It should not be a business." A key is created
+  by connecting OpenRouter (its PKCE flow, which needs no registration) or pasted, with a very obvious warning
+  about setting a spending limit either way. Pasting was the only way until 11 November 2026.
+- **Rounds.** Anyone may propose the next question on a project (60 words, one line), and anyone with a key may
+  pledge towards one. A round closes a day after its first pledge, the question with the most pledged is
+  researched with those pledges, and every other pledge stands for the next round, having cost nothing. An
+  ordinary donation still starts at once and works through the editor's list. There is one standing question on
+  every project, an audit of the findings. **Nothing closes or locks a project**: freezing a report was left
+  out, because one small pledge could have closed someone else's project.
+- **Prompts and proposed questions publish without review.** Reports and `/admin` takedowns exist, for both, but
+  nothing is filtered in advance.
 - **The 250-word limit is the only rule on a prompt.** A flood limit of 20 prompts per account per hour was added
   for launch. `MAX_PROMPTS_PER_HOUR=0` removes it, and the operator has been told about it.
 - **Output is text and HTML only**, and every prompt is a hosted git repository that can be cloned.
@@ -77,6 +90,8 @@ keep to this dose:
 - It now has: IBM Plex Mono for every figure and @handle, `OR-0001` references, a live activity ticker, segmented
   funding meters towards milestones, a dark graph-paper first place with a funding chart, and green for money and
   live states. "Raised" and "pledged" are the words for amounts, and "donated" is used for what a donor has given.
+- A round uses the same words: a question is "proposed", "backed" and "leading", and a pledge "stands", is
+  "withdrawn" or "could not be met". "Bid", "auction", "win" and "lose" are not used of a round.
 - Source Serif prompts, italic old-style rank figures, and dry lines such as "$0.02 short of second place." and
   "This place is vacant." stayed.
 - **@handles must be clearly visible everywhere.** They go through `src/lib/components/Handle.svelte`.
@@ -106,6 +121,11 @@ keep to this dose:
   in `src/lib/budget.ts`. A 402 with `Retry-After` is temporary. The `web` plugin is deprecated but still works, and
   its replacement was in beta on 3 November 2026.
 - **Browsers keep 404 and 410 responses** unless told otherwise, so pages send `private, no-cache`.
+- **A pledge is not a donation until its round closes.** Pledges are kept in their own table, and `settle` in
+  `src/lib/server/rounds.ts` turns the leading question's pledges into queued donations, checking each key first.
+  Pledges are fixed from the moment a round closes until it has been settled. The browser tests run rounds of
+  fifteen seconds (`ROUND_MINUTES=0.25` in `playwright.config.ts`), and the server refuses less than ten minutes
+  on a public address.
 - **The worker lives in the server process.** There must be one process, with a persistent disk, and never more than one
   replica. Serverless hosting will not work.
 - **Stopping.** At SIGTERM the worker starts nothing new, gives runs in progress up to 100 seconds to finish, closes the

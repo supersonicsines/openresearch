@@ -18,10 +18,18 @@ export type ProjectSummary = {
 	pending: number;
 	/** Spent on runs completed in the last 24 hours. */
 	spent_24h: number;
+	/** The number of the round that is open. */
+	round: number;
+	/** When that round closes, once a pledge has been made in it. */
+	round_closes_at: number | null;
+	/** Pledged towards questions in that round. Nothing is charged for it unless its question leads. */
+	backing: number;
 };
 
 const SUMMARY = `
-SELECT p.id, p.slug, p.title, p.prompt, p.created_at,
+SELECT p.id, p.slug, p.title, p.prompt, p.created_at, p.round, p.round_closes_at,
+	(SELECT COALESCE(SUM(g.amount_micro), 0) FROM pledges g JOIN proposals o ON o.id = g.proposal_id
+		WHERE o.project_id = p.id AND o.status = 'open' AND g.status = 'standing') AS backing,
 	u.handle AS author_handle, u.avatar_url AS author_avatar,
 	COALESCE(s.spent, 0) AS spent, COALESCE(s.runs, 0) AS runs, COALESCE(s.donors, 0) AS donors,
 	COALESCE(s.last_at, p.created_at) AS last_at,
@@ -44,7 +52,7 @@ const VISIBLE = 'p.hidden_at IS NULL';
 const SORTS = {
 	donated: 'spent DESC, p.created_at DESC',
 	recent: 'p.created_at DESC, p.id DESC',
-	rising: 'spent_24h DESC, active DESC, pending DESC, last_at DESC',
+	rising: 'spent_24h DESC, active DESC, pending DESC, backing DESC, last_at DESC',
 	active: 'active DESC, last_at DESC'
 } as const;
 
@@ -135,7 +143,7 @@ export function fundingSeries(projectIds: number[]): Map<number, SeriesPoint[]> 
 
 export type ActivityItem = {
 	key: string;
-	kind: 'submitted' | 'pledged' | 'completed';
+	kind: 'submitted' | 'pledged' | 'completed' | 'proposed' | 'backed' | 'won';
 	at: number;
 	handle: string;
 	id: number;
@@ -156,8 +164,33 @@ export function recentActivity(limit = 24): ActivityItem[] {
 			UNION ALL
 			SELECT * FROM (
 				SELECT 'd' || d.id, 'pledged', d.created_at, u.handle, p.id, p.slug, d.amount_micro, 0
-				FROM donations d JOIN users u ON u.id = d.user_id JOIN projects p ON p.id = d.project_id WHERE ${VISIBLE}
+				FROM donations d JOIN users u ON u.id = d.user_id JOIN projects p ON p.id = d.project_id
+				WHERE d.proposal_id IS NULL AND ${VISIBLE}
 				ORDER BY d.created_at DESC LIMIT ?1
+			)
+			UNION ALL
+			SELECT * FROM (
+				SELECT 'o' || o.id, 'proposed', o.created_at, u.handle, p.id, p.slug, 0, 0
+				FROM proposals o JOIN users u ON u.id = o.user_id JOIN projects p ON p.id = o.project_id
+				WHERE o.kind = 'question' AND o.status IN ('open','won') AND ${VISIBLE}
+				ORDER BY o.created_at DESC LIMIT ?1
+			)
+			UNION ALL
+			SELECT * FROM (
+				SELECT 'g' || g.id, 'backed', g.created_at, u.handle, p.id, p.slug, g.amount_micro, 0
+				FROM pledges g JOIN proposals o ON o.id = g.proposal_id JOIN users u ON u.id = g.user_id
+				JOIN projects p ON p.id = o.project_id
+				WHERE g.status IN ('standing','called') AND o.status IN ('open','won') AND ${VISIBLE}
+				ORDER BY g.created_at DESC LIMIT ?1
+			)
+			UNION ALL
+			SELECT * FROM (
+				SELECT 'w' || o.id, 'won', o.settled_at, u.handle, p.id, p.slug,
+					(SELECT COALESCE(SUM(g.amount_micro), 0) FROM pledges g WHERE g.proposal_id = o.id AND g.status = 'called'),
+					o.round
+				FROM proposals o JOIN users u ON u.id = o.user_id JOIN projects p ON p.id = o.project_id
+				WHERE o.status = 'won' AND ${VISIBLE}
+				ORDER BY o.settled_at DESC LIMIT ?1
 			)
 			UNION ALL
 			SELECT * FROM (
@@ -233,10 +266,16 @@ export type RunRow = {
 	finished_at: number;
 	handle: string;
 	avatar_url: string | null;
+	/** Whoever proposed the question, where it was chosen in a round. */
+	proposer: string | null;
 };
 
+// A run answers a proposed question only where its question is that one. The later runs of the same
+// donation take theirs from the list.
 const RUN_FIELDS = `r.id, r.seq, r.model, r.model_name, r.question, r.sources, r.input_tokens,
-	r.output_tokens, r.cost_micro, r.commit_sha, r.finished_at, u.handle, u.avatar_url`;
+	r.output_tokens, r.cost_micro, r.commit_sha, r.finished_at, u.handle, u.avatar_url,
+	(SELECT pu.handle FROM donations d JOIN proposals o ON o.id = d.proposal_id JOIN users pu ON pu.id = o.user_id
+		WHERE d.id = r.donation_id AND o.kind = 'question' AND o.status = 'won' AND o.question = r.question) AS proposer`;
 
 export type RunListRow = Omit<RunRow, 'report_md' | 'report_html'>;
 
@@ -362,13 +401,16 @@ export type DonationRow = {
 	end_reason: string | null;
 	created_at: number;
 	finished_at: number | null;
+	/** The question it was pledged towards, where it came from a round. */
+	proposal_id: number | null;
 };
 
-export type DonationListRow = DonationRow & { slug: string; title: string };
+export type DonationListRow = DonationRow & { slug: string; title: string; question: string | null };
 
 export function userDonations(userId: number, limit = 50): DonationListRow[] {
 	return all<DonationListRow>(
-		`SELECT d.*, p.slug, CASE WHEN p.hidden_at IS NULL THEN p.title ELSE 'A project that has been removed' END AS title
+		`SELECT d.*, p.slug, CASE WHEN p.hidden_at IS NULL THEN p.title ELSE 'A project that has been removed' END AS title,
+			(SELECT o.question FROM proposals o WHERE o.id = d.proposal_id AND o.status = 'won' AND p.hidden_at IS NULL) AS question
 		FROM donations d JOIN projects p ON p.id = d.project_id
 		WHERE d.user_id = ? ORDER BY d.id DESC LIMIT ?`,
 		userId,

@@ -25,7 +25,9 @@ export const config = {
 	/** Shown on the terms and privacy pages. */
 	contactEmail: e.CONTACT_EMAIL || '',
 	/** A flood limit per account. 0 removes it. */
-	promptsPerHour: Number(e.MAX_PROMPTS_PER_HOUR ?? 20)
+	promptsPerHour: Number(e.MAX_PROMPTS_PER_HOUR ?? 20),
+	/** How long a round stays open after its first pledge. A day, unless a test asks for less. */
+	roundMs: Math.max(1_000, (Number(e.ROUND_MINUTES) || 1_440) * 60_000)
 };
 
 export const githubConfigured = () => Boolean(config.githubClientId);
@@ -94,6 +96,10 @@ export function startupReport(origin: string, env: Record<string, string | undef
 	if (env.DEMO_MODE === '1') problems.push('DEMO_MODE must not be set on a public address.');
 	if (env.OPENROUTER_BASE_URL && !env.OPENROUTER_BASE_URL.startsWith('https://openrouter.ai/')) {
 		problems.push('OPENROUTER_BASE_URL points away from OpenRouter, so donors\' keys would be sent elsewhere.');
+	}
+	// A round of a few seconds is for tests. On a public site it would close before anyone could answer a pledge.
+	if (env.ROUND_MINUTES && !(Number(env.ROUND_MINUTES) >= 10)) {
+		problems.push('ROUND_MINUTES must be 10 or more, or left unset for a round of one day.');
 	}
 	if (env.GITHUB_WEB_BASE || env.GITHUB_API_BASE) problems.push('GITHUB_WEB_BASE and GITHUB_API_BASE are for tests only and must not be set.');
 	if (!env.GITHUB_CLIENT_ID || !env.GITHUB_CLIENT_SECRET) problems.push('GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET must be set, or nobody can sign in.');

@@ -23,6 +23,31 @@ which has a $3 limit. About $1.45 was spent in all.
 - **Claude Sonnet 5.5, funded with $0.50 each (OR-0002, OR-0003 and OR-0004):** every report was complete rather
   than cut short, and a run cost between $0.07 and $0.10.
 
+### Rounds and the OpenRouter connection, 11 November 2026
+
+Added after launch: anyone may propose the next question on a project and pledge towards one, and a key may
+be created by connecting an OpenRouter account. Everything below ran against the stand-ins, on a production build.
+
+- **A whole round, in Chrome:** a question proposed, OpenRouter connected from the same dialog, a pledge made,
+  a second visitor's larger pledge arriving on the first visitor's page without a reload, the round closing,
+  the leading question researched with its pledges and recorded with whoever proposed it, the other pledge
+  standing and then leading the next round with nobody doing anything further.
+- **Pledges that cannot be met:** a key with nothing left when the round closed was set aside before the leader
+  was decided, and the smaller pledge led. A key that OpenRouter accepted and then declined to charge led its
+  round and paid for nothing. Both were counted against the account and shown on its profile.
+- **Withdrawal, removal and the rules:** a pledge and a question withdrawn, a question removed in `/admin` with
+  its pledge released, and the limits enforced by the server whatever the page sends.
+- **The connection:** approved with a limit, approved without one, declined, and a code that was not issued to
+  the browser, from the donation dialog and from the account page.
+- **The database:** a copy with the live site's schema and rows in it was brought up to the new version as the
+  server does at startup. Nothing stored was changed, and the previous release still runs against it.
+- **Not checked against the real OpenRouter:** the approval page and the exchange of its code. They were written
+  from OpenRouter's documentation as read on 11 November 2026. No registration is needed, but no real account
+  was used. If the connection fails, the visitor is told and a key can still be pasted. **It should be tried
+  once on the live site by the operator.**
+- **Not checked on a real key:** the check of each key when a round closes, which uses the same request as the
+  check made when a key is added.
+
 ### Before launch, against stand-ins
 
 Everything below ran against stand-ins for OpenRouter and GitHub, on a production build.
@@ -104,9 +129,15 @@ If a report is cut short on Sonnet, `MAX_RESEARCH_TOKENS` in `src/lib/budget.ts`
   3 November 2026, but it has not made an authenticated call. Findings are in the section below.
 - **OpenRouter's web plugin is deprecated.** It is still documented and working as far as can be told.
   The replacement is in beta, so the plugin has been kept. No end date was found.
-- **Keys are pasted, not granted by OAuth.** If the server and `ENCRYPTION_KEY` were both compromised,
-  stored keys would be exposed. Spending limits on keys are what limits the damage, which is why the
-  warning is so prominent.
+- **Keys are stored, whether pasted or created by connecting OpenRouter.** If the server and `ENCRYPTION_KEY`
+  were both compromised, stored keys would be exposed. Spending limits on keys are what limits the damage,
+  which is why the warning is so prominent. A key created by connecting has whatever limit the visitor gave
+  it on OpenRouter's page, and none if none was given.
+- **A pledge reserves nothing.** OpenRouter has no means of holding an amount, so a pledge can be made and the
+  key emptied before the round closes. Each key is checked again at that point and three unmet pledges in 30
+  days stop an account from pledging, but a key with a limit and no credit behind it passes the check, leads
+  its round and pays for nothing. That round is then lost, and the other pledges wait for the next.
+- **Proposed questions are not reviewed in advance,** as prompts are not. They can be removed in `/admin`.
 - **Prompts are not reviewed in advance.** Everything is published immediately under the site's name.
   Removal is available, and the operator should expect to use it.
 - **One process, one SQLite file.** It should carry far more than a launch night, but it is not

@@ -17,6 +17,7 @@
 
 <dl class="facts small">
 	<div><dt>Run</dt><dd class="figures">{run.seq}</dd></div>
+	{#if run.proposer}<div><dt>Proposed by</dt><dd><a class="link" href="/u/{run.proposer}">@{run.proposer}</a></dd></div>{/if}
 	<div><dt>Funded by</dt><dd><a class="link" href="/u/{run.handle}">@{run.handle}</a></dd></div>
 	<div><dt>Model</dt><dd>{shortModelName(run.model_name)}</dd></div>
 	<div><dt>Tokens</dt><dd class="figures">{run.input_tokens.toLocaleString('en-GB')} in, {run.output_tokens.toLocaleString('en-GB')} out</dd></div>

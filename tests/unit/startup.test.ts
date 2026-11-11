@@ -38,7 +38,8 @@ describe('startup checks', () => {
 		['no GitHub secret', 'https://example.org', { GITHUB_CLIENT_SECRET: '' }],
 		['no encryption key', 'https://example.org', { ENCRYPTION_KEY: '' }],
 		['a short encryption key', 'https://example.org', { ENCRYPTION_KEY: 'c2hvcnQ=' }],
-		['no address header', 'https://example.org', { ADDRESS_HEADER: '' }]
+		['no address header', 'https://example.org', { ADDRESS_HEADER: '' }],
+		['a round of a few seconds', 'https://example.org', { ROUND_MINUTES: '0.25' }]
 	])('refuses to start with %s', (_, origin, change) => {
 		expect(startupReport(origin, { ...GOOD, ...change }).problems).toHaveLength(1);
 	});

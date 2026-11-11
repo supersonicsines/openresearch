@@ -46,6 +46,12 @@
 	<div><dd class="figures">{data.stats.runs}</dd><dt>{data.stats.runs === 1 ? 'Run' : 'Runs'} funded</dt></div>
 </dl>
 
+{#if data.unhonoured > 0}
+	<p class="unmet small muted">
+		{data.unhonoured === 1 ? '1 pledge' : `${data.unhonoured} pledges`} from this account could not be met in the last 30 days.
+	</p>
+{/if}
+
 <section>
 	<h2 class="serif">Projects funded</h2>
 	{#if data.funded.length === 0}
@@ -80,6 +86,9 @@
 />
 
 <style>
+	.unmet {
+		margin-top: 14px;
+	}
 	.head {
 		display: flex;
 		align-items: center;

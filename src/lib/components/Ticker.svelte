@@ -3,7 +3,7 @@
 
 	type Item = {
 		key: string;
-		kind: 'submitted' | 'pledged' | 'completed';
+		kind: 'submitted' | 'pledged' | 'completed' | 'proposed' | 'backed' | 'won';
 		at: number;
 		handle: string;
 		id: number;
@@ -27,6 +27,12 @@
 				<span class="ref">{reference(item.id)}</span> submitted by <b>@{item.handle}</b>
 			{:else if item.kind === 'pledged'}
 				<em class="paid">{money(item.micro)}</em> pledged to <span class="ref">{reference(item.id)}</span> by <b>@{item.handle}</b>
+			{:else if item.kind === 'proposed'}
+				A question was proposed on <span class="ref">{reference(item.id)}</span> by <b>@{item.handle}</b>
+			{:else if item.kind === 'backed'}
+				<em class="paid">{money(item.micro)}</em> pledged to a question on <span class="ref">{reference(item.id)}</span> by <b>@{item.handle}</b>
+			{:else if item.kind === 'won'}
+				Round {item.seq} of <span class="ref">{reference(item.id)}</span> closed with <em class="paid">{money(item.micro)}</em> pledged to the leading question
 			{:else}
 				Run {item.seq} of <span class="ref">{reference(item.id)}</span> completed for <em class="paid">{money(item.micro)}</em>, funded by <b>@{item.handle}</b>
 			{/if}

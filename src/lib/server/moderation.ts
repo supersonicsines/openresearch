@@ -5,6 +5,7 @@ import { all, get, run, tx } from './db.ts';
 import { config } from './env.ts';
 import { deleteKey } from './keys.ts';
 import { repoDir, repoExists } from './repo.ts';
+import { releasePledgesForProject, releasePledgesForUser, removeProposal, removeProposalsBy } from './rounds.ts';
 import { stopDonation, stopDonationsForUser } from './worker.ts';
 
 export function isAdmin(user: { handle: string } | null | undefined): boolean {
@@ -25,6 +26,15 @@ export function hideProject(slug: string, reason: string) {
 	if (!project) return false;
 	run('UPDATE projects SET hidden_at = ?, hidden_reason = ? WHERE id = ?', Date.now(), reason, project.id);
 	stopForProject(project.id, 'The project was removed by the operator of this site.');
+	releasePledgesForProject(project.id, 'The project was removed by the operator of this site.');
+	return true;
+}
+
+/** Takes one proposed question out of public view, and ends whatever was to be spent on it. */
+export function hideProposal(id: number) {
+	const removed = removeProposal(id);
+	if (!removed) return false;
+	for (const donation of removed.donations) stopDonation(donation, 'The question was removed by the operator of this site.');
 	return true;
 }
 
@@ -50,6 +60,7 @@ export async function purgeProject(slug: string) {
 			`UPDATE runs SET question = '[deleted]', report_md = '', report_html = '', sources = '[]' WHERE project_id = ?`,
 			project.id
 		);
+		run(`UPDATE proposals SET question = '[deleted]', status = 'removed' WHERE project_id = ?`, project.id);
 	});
 	if (repoExists(slug)) await rm(repoDir(slug), { recursive: true, force: true });
 	return true;
@@ -62,6 +73,10 @@ export function suspendUser(handle: string, hidePrompts: boolean) {
 	run('UPDATE users SET suspended_at = ? WHERE id = ?', Date.now(), user.id);
 	run('DELETE FROM sessions WHERE user_id = ?', user.id);
 	stopDonationsForUser(user.id, 'The account was suspended by the operator of this site.');
+	releasePledgesForUser(user.id, 'The account was suspended by the operator of this site.');
+	for (const donation of removeProposalsBy(user.id)) {
+		stopDonation(donation, 'The question was removed by the operator of this site.');
+	}
 	deleteKey(user.id);
 	if (hidePrompts) {
 		const projects = all<{ slug: string }>('SELECT slug FROM projects WHERE author_id = ? AND hidden_at IS NULL', user.id);

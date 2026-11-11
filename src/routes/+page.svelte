@@ -24,7 +24,7 @@
 			title: p.title,
 			reference: reference(p.id),
 			by: { handle: p.author_handle, avatar: p.author_avatar },
-			meta: `${plural(p.runs, 'run')}, ${plural(p.donors, 'donor')}`,
+			meta: `${plural(p.runs, 'run')}, ${plural(p.donors, 'donor')}${p.backing > 0 ? `, ${money(p.backing)} pledged to questions` : ''}`,
 			note: data.sort === 'recent' || !p.runs ? `Submitted ${timeAgo(p.created_at)}` : `Updated ${timeAgo(p.last_at)}`,
 			live: Boolean(p.active),
 			fresh: Date.now() - p.created_at < DAY,
@@ -57,7 +57,7 @@
 	<div class="pitch">
 		<h1 class="serif">Any prompt may be listed. Those that are funded are researched in public.</h1>
 		<p class="muted">
-			Funding comes from donors' own OpenRouter keys, and every run is committed to an open repository.
+			Funding comes from donors' own OpenRouter keys, the next question is proposed and backed in the open, and every run is committed to an open repository.
 			<a class="link" href="/about">The process is described here.</a>
 		</p>
 		<a class="btn btn-primary cta" href="/submit">Submit a prompt</a>
