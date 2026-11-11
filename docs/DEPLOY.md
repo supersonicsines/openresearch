@@ -182,6 +182,9 @@ that domain, the generated `*.up.railway.app` domain is removed from the service
 - **Updating.** A push to `main` is deployed. The volume can be attached to one deployment at a time, so
   Railway starts the new deployment only once the old one has stopped, and the site is unavailable in
   between. That includes the time taken by any run in progress, up to 100 seconds.
+- **A deployment that never starts.** On 11 November 2026 GitHub Actions was down when a push was made, and
+  its run stayed queued with no jobs after the service had recovered. Such a run can be neither re-run nor
+  cancelled. The CI workflow can be started by hand from the Actions tab, on `main`, and that run deploys.
 
 ## Updating
 

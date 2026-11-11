@@ -4,6 +4,9 @@ on:
   push:
     branches: [main]
   pull_request:
+  # A run can be lost when GitHub Actions is down: it stays queued, and can be neither re-run nor cancelled.
+  # It is then started by hand, from the Actions tab, and deploys only where it is started on main.
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -63,10 +66,10 @@ jobs:
           docker logs openresearch
           test "$(docker inspect --format '{{.State.ExitCode}}' openresearch)" = 0
 
-  # A push to main that passes every check goes live on openresearch.click. The token can deploy this one Railway
+  # A push to main that passes every check goes live on openresearch.click, as does a run started by hand on main. The token can deploy this one Railway
   # project and nothing else, and only main can read it. A deployment waits for runs in progress to finish (DEPLOY.md).
   deploy:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
     needs: [check, e2e, docker]
     runs-on: ubuntu-latest
     environment:
