@@ -64,6 +64,17 @@ These were weighed and decided, so they should not be reopened unless the operat
   ordinary donation still starts at once and works through the editor's list. There is one standing question on
   every project, an audit of the findings. **Nothing closes or locks a project**: freezing a report was left
   out, because one small pledge could have closed someone else's project.
+- **A prompt may ask for new work, not only for what is known.** "The point of this project is to open ended fund
+  answers to questions, the way internal labs do." The models are instructed to put forward hypotheses, designs
+  and plans where a question calls for them, and to mark each as a proposal that has not been tested. A summary
+  of past research is the weaker use of the site, and sample prompts should not be of that kind.
+- **Findings are in sections that open and close.** They open with the answer as it stands. Everything after it
+  is under a `## ` heading, shown closed until a reader opens it, with what is established kept apart from what
+  is proposed. The wrappers are written by `renderFindings`, never by the model.
+- **The research tree.** The unit is the question, not the run. Every question is recorded with where it came
+  from (the prompt, the editor's list after a run, a visitor's proposal, the audit) and what became of it
+  (researched, open, in a round, set aside). A question hangs from the run that raised it, and the Tree tab can
+  show the tree as it stood after any run.
 - **Prompts and proposed questions publish without review.** Reports and `/admin` takedowns exist, for both, but
   nothing is filtered in advance.
 - **The 250-word limit is the only rule on a prompt.** A flood limit of 20 prompts per account per hour was added
@@ -126,6 +137,12 @@ keep to this dose:
   Pledges are fixed from the moment a round closes until it has been settled. The browser tests run rounds of
   fifteen seconds (`ROUND_MINUTES=0.25` in `playwright.config.ts`), and the server refuses less than ten minutes
   on a public address.
+- **The record of questions is written with each run.** `recordRun` in `src/lib/server/lineage.ts` is called in the
+  transaction that stores the run, and the rules are the pure functions in `src/lib/lineage.ts`. A project from
+  before 12 November 2026 has its record rebuilt once from its repository, which holds `open-questions.md` as it
+  stood after every run. On sample data the rebuilt record was identical to the one written as the runs happened.
+  The state at any past run is worked out on the page from the same rows, by `stateAt`, so nothing is stored per
+  point in time.
 - **The worker lives in the server process.** There must be one process, with a persistent disk, and never more than one
   replica. Serverless hosting will not work.
 - **Stopping.** At SIGTERM the worker starts nothing new, gives runs in progress up to 100 seconds to finish, closes the

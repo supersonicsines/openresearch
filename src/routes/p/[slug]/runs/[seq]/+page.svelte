@@ -17,6 +17,7 @@
 
 <dl class="facts small">
 	<div><dt>Run</dt><dd class="figures">{run.seq}</dd></div>
+	{#if run.raised_by}<div><dt>Raised by</dt><dd><a class="link" href="{base}/runs/{run.raised_by}">Run {run.raised_by}</a></dd></div>{/if}
 	{#if run.proposer}<div><dt>Proposed by</dt><dd><a class="link" href="/u/{run.proposer}">@{run.proposer}</a></dd></div>{/if}
 	<div><dt>Funded by</dt><dd><a class="link" href="/u/{run.handle}">@{run.handle}</a></dd></div>
 	<div><dt>Model</dt><dd>{shortModelName(run.model_name)}</dd></div>

@@ -71,7 +71,7 @@
 		const params = page.url.searchParams;
 		keyOutcome = params.get('openrouter');
 		if (params.get('donate')) donate();
-		const marks = ['donate', 'back', 'propose', 'openrouter'].filter((name) => params.has(name));
+		const marks = ['donate', 'back', 'propose', 'q', 'openrouter'].filter((name) => params.has(name));
 		if (marks.length === 0) return;
 		const clean = new URL(page.url.href);
 		for (const name of marks) clean.searchParams.delete(name);
@@ -89,6 +89,7 @@
 	const path = $derived(page.url.pathname);
 	const tabs = $derived([
 		{ href: base, label: 'Findings', active: path === base },
+		{ href: `${base}/tree`, label: 'Tree', active: path.startsWith(`${base}/tree`) },
 		{ href: `${base}/runs`, label: 'Runs', active: path.startsWith(`${base}/runs`), count: project.runs },
 		{ href: `${base}/repository`, label: 'Repository', active: path.startsWith(`${base}/repository`) }
 	]);

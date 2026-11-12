@@ -620,3 +620,85 @@ kbd {
 		animation: none !important;
 	}
 }
+
+/* Findings are set out in sections, each of which opens and closes under its heading. The markup is
+   written by the server around text that has been made safe (renderFindings). */
+.prose .sections {
+	margin-top: 1.5em;
+	border-top: 1px solid var(--rule);
+}
+
+.prose details.section {
+	border-bottom: 1px solid var(--rule);
+	scroll-margin-top: 16px;
+}
+
+.prose details.section > summary {
+	display: flex;
+	align-items: baseline;
+	gap: 12px;
+	padding-block: 14px;
+	cursor: pointer;
+	list-style: none;
+}
+
+.prose details.section > summary::-webkit-details-marker {
+	display: none;
+}
+
+/* The mark turns to point down when the section is open. */
+.prose details.section > summary::before {
+	content: '';
+	flex: none;
+	width: 7px;
+	height: 7px;
+	margin-inline: 2px 4px;
+	border-right: 1.5px solid var(--ink-2);
+	border-bottom: 1.5px solid var(--ink-2);
+	transform: translateY(-2px) rotate(-45deg);
+	transition: transform 0.16s var(--ease-out);
+}
+
+.prose details.section[open] > summary::before {
+	transform: translateY(-3px) rotate(45deg);
+}
+
+.prose details.section > summary h2 {
+	flex: 1;
+	min-width: 0;
+	margin: 0;
+	font-size: 1.25rem;
+	line-height: 1.3;
+	overflow-wrap: anywhere;
+}
+
+.prose details.section > summary .count {
+	flex: none;
+	font: 400 0.75rem/1 var(--mono);
+	color: var(--ink-2);
+	white-space: nowrap;
+}
+
+.prose .section-body {
+	padding: 0 0 20px 25px;
+}
+
+.prose .section-body > * + * {
+	margin-top: 1em;
+}
+
+.prose .section-body > :first-child {
+	margin-top: 0;
+}
+
+@media (hover: hover) and (pointer: fine) {
+	.prose details.section > summary:hover h2 {
+		color: var(--accent);
+	}
+}
+
+@media (max-width: 560px) {
+	.prose .section-body {
+		padding-left: 0;
+	}
+}

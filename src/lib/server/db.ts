@@ -165,6 +165,27 @@ const MIGRATIONS: string[] = [
 	ALTER TABLE donations ADD COLUMN proposal_id INTEGER REFERENCES proposals(id);
 	CREATE INDEX projects_round ON projects(round_closes_at);
 	`,
+	// The record of every question asked of a prompt, from which the research tree is drawn. `lineage` is
+	// set once a project's record is complete, which for projects older than this is done from their
+	// repositories. `findings_format` is 2 once the findings have been rendered in sections.
+	`
+	CREATE TABLE questions (
+		id INTEGER PRIMARY KEY,
+		project_id INTEGER NOT NULL REFERENCES projects(id),
+		text TEXT NOT NULL,
+		origin TEXT NOT NULL CHECK (origin IN ('prompt','editor','review','proposal','audit')),
+		parent_seq INTEGER NOT NULL DEFAULT 0,
+		proposal_id INTEGER REFERENCES proposals(id),
+		raised_at INTEGER NOT NULL,
+		run_seq INTEGER,
+		closed_seq INTEGER,
+		closed_at INTEGER
+	);
+	CREATE INDEX questions_project ON questions(project_id, id);
+	CREATE INDEX questions_run ON questions(project_id, run_seq);
+	ALTER TABLE projects ADD COLUMN lineage INTEGER NOT NULL DEFAULT 0;
+	ALTER TABLE projects ADD COLUMN findings_format INTEGER NOT NULL DEFAULT 1;
+	`,
 ];
 
 const holder = globalThis as unknown as { __osDb?: DatabaseSync };

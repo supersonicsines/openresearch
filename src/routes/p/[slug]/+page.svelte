@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Countdown from '#lib/components/Countdown.svelte';
+	import Findings from '#lib/components/Findings.svelte';
 	import LiveRun from '#lib/components/LiveRun.svelte';
 	import RoundPanel from '#lib/components/RoundPanel.svelte';
 	import { money } from '#lib/format.ts';
@@ -25,12 +26,13 @@
 {/if}
 
 {#if project.findings_html}
-	<div class="prose">{@html project.findings_html}</div>
+	<Findings html={project.findings_html} />
 
 	<p class="formats small muted">
 		The findings may be read as
 		<a class="link" href="/p/{project.slug}/files/findings.md" data-sveltekit-reload>text</a> or as
 		<a class="link" href="/p/{project.slug}/files/findings.html" data-sveltekit-reload>HTML</a>.
+		Where each question came from is shown in the <a class="link" href="/p/{project.slug}/tree">research tree</a>.
 	</p>
 {:else if !project.active && project.runs > 0}
 	<div class="empty">
@@ -65,7 +67,7 @@
 		background: var(--surface);
 	}
 	.formats {
-		margin-top: 40px;
+		margin-top: 28px;
 	}
 	.empty p:first-child {
 		font-size: 1.375rem;

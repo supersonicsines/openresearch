@@ -177,13 +177,16 @@ function reportFor(system, key) {
 	};
 }
 
+// The findings open with the answer as it stands, and everything after it is in sections.
+const LEAD = 'The evidence gathered so far is set out in the sections below. It is sample text produced by the demonstration.';
+
 function editorReply(system, user) {
 	const prompt = system.match(/<prompt>\s*([\s\S]*?)\s*<\/prompt>/)?.[1] ?? '';
 	const current = system.match(/<findings>\s*([\s\S]*?)\s*<\/findings>/)?.[1] ?? '';
 	const topic = topicFor(prompt);
 	const n = seen.get(prompt) ?? 1;
-	const previous = current.startsWith('None as yet') ? '' : current;
-	const merged = previous ? `${previous}\n\n${user.trim()}` : user.trim();
+	const previous = current.startsWith('None as yet') ? '' : current.replace(LEAD, '').trim();
+	const merged = `${LEAD}\n\n${previous ? `${previous}\n\n${user.trim()}` : user.trim()}`;
 	const questions = topic.questions.slice(Math.max(0, n - 1));
 	const list = questions.map((q) => `- ${q}`).join('\n');
 	return `<findings>\n${merged}\n</findings>\n<questions>\n${list}\n</questions>`;

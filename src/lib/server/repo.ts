@@ -135,6 +135,16 @@ export async function readTracked(slug: string, path: string): Promise<string | 
 	return git(slug, ['show', `HEAD:${path}`]);
 }
 
+/** Reads a file as it was at one commit. Null where the commit or the file is not there. */
+export async function readAt(slug: string, sha: string, path: string): Promise<string | null> {
+	if (!/^[0-9a-f]{7,64}$/.test(sha) || !/^[A-Za-z0-9._/-]+$/.test(path) || path.includes('..')) return null;
+	try {
+		return await git(slug, ['show', `${sha}:${path}`]);
+	} catch {
+		return null;
+	}
+}
+
 export async function archiveZip(slug: string): Promise<Buffer> {
 	const { stdout } = await exec('git', ['archive', '--format=zip', `--prefix=${slug}/`, 'HEAD'], {
 		cwd: repoDir(slug),

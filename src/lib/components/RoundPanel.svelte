@@ -7,8 +7,8 @@
 </script>
 
 <script lang="ts">
-	import { getContext, onMount } from 'svelte';
-	import { refreshAll } from '$app/navigation';
+	import { getContext, onMount, tick } from 'svelte';
+	import { refreshAll, replaceState } from '$app/navigation';
 	import { page } from '$app/state';
 	import { postJson } from '#lib/client.ts';
 	import { fullDate, money, plural } from '#lib/format.ts';
@@ -100,8 +100,20 @@
 			const row = rows.find((r) => (wanted === 'audit' ? r.kind === 'audit' : r.id === Number(wanted)));
 			if (row) back(row);
 		} else if (params.get('propose')) {
-			propose();
+			// The research tree sends a question here to be proposed, with its text.
+			propose((params.get('q') ?? '').slice(0, 2000));
 		}
+		// The marks are taken out of the address, so that the dialog does not open again on a reload.
+		if (!['back', 'propose', 'q'].some((name) => params.has(name))) return;
+		const clean = new URL(page.url.href);
+		for (const name of ['back', 'propose', 'q']) clean.searchParams.delete(name);
+		tick().then(() => {
+			try {
+				replaceState(clean, page.state);
+			} catch {
+				history.replaceState(history.state, '', clean);
+			}
+		});
 	});
 </script>
 

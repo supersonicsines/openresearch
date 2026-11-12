@@ -61,6 +61,7 @@ export async function purgeProject(slug: string) {
 			project.id
 		);
 		run(`UPDATE proposals SET question = '[deleted]', status = 'removed' WHERE project_id = ?`, project.id);
+		run(`UPDATE questions SET text = '[deleted]' WHERE project_id = ?`, project.id);
 	});
 	if (repoExists(slug)) await rm(repoDir(slug), { recursive: true, force: true });
 	return true;

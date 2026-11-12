@@ -6,8 +6,9 @@ A public board of research prompts. Any prompt of up to 250 words may be listed 
 account, and a public git repository is created for it. Research on that prompt is paid for by
 whoever chooses to donate from their own OpenRouter key. The next question on a project may be proposed
 by anyone, and pledges are made towards it: once a day the question with the most pledged is researched
-with those pledges, and nothing is charged for the others. Every run is committed to the repository as
-text and as HTML. Projects and donors are ranked on two leaderboards, and shareable cards can be
+with those pledges, and nothing is charged for the others. Every question is recorded with the run that
+raised it, and the resulting tree can be seen as it stood after any run. Every run is committed to the
+repository as text and as HTML. Projects and donors are ranked on two leaderboards, and shareable cards can be
 generated for X.
 
 ![The board, with first place on a dark cell, a live activity feed, and a funding meter on every project](docs/demo.png)

@@ -23,6 +23,24 @@ which has a $3 limit. About $1.45 was spent in all.
 - **Claude Sonnet 5.5, funded with $0.50 each (OR-0002, OR-0003 and OR-0004):** every report was complete rather
   than cut short, and a run cost between $0.07 and $0.10.
 
+### Sections, the research tree and proposals, 12 November 2026
+
+Findings are now shown in sections that open and close, every question is recorded with the run that raised
+it, and the models are instructed to put forward new work where a question asks for it. Everything below ran
+against the stand-ins, on a production build.
+
+- **Sections, in Chrome:** closed to begin with, opened by pointer and by keyboard, all opened and closed at once,
+  opened by a link to one, and present in the repository's `findings.html` without any script.
+- **The tree, in Chrome:** each question beneath the run that raised it, a branch folded away, the tree stepped
+  back run by run to before the first, the slider moved by keyboard, open questions shown alone, and a question
+  proposed for the round from where it stands in the tree.
+- **Older projects:** the record of questions was deleted from a set of sample projects and rebuilt from their
+  repositories at the next start. It was identical to the record written as the runs happened, and their findings
+  were rendered again in sections. No run chosen in a round was among them, so that case is covered only by the
+  rules' own tests.
+- **Not checked on a real model:** whether the instructions about sections and proposals are followed. A
+  document with no `## ` headings is shown whole, as before, so nothing is lost if they are not.
+
 ### Rounds and the OpenRouter connection, 11 November 2026
 
 Added after launch: anyone may propose the next question on a project and pledge towards one, and a key may

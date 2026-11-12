@@ -268,6 +268,8 @@ export type RunRow = {
 	avatar_url: string | null;
 	/** Whoever proposed the question, where it was chosen in a round. */
 	proposer: string | null;
+	/** The run whose edit first listed the question, where it came from the editor's list. */
+	raised_by: number | null;
 };
 
 // A run answers a proposed question only where its question is that one. The later runs of the same
@@ -275,7 +277,9 @@ export type RunRow = {
 const RUN_FIELDS = `r.id, r.seq, r.model, r.model_name, r.question, r.sources, r.input_tokens,
 	r.output_tokens, r.cost_micro, r.commit_sha, r.finished_at, u.handle, u.avatar_url,
 	(SELECT pu.handle FROM donations d JOIN proposals o ON o.id = d.proposal_id JOIN users pu ON pu.id = o.user_id
-		WHERE d.id = r.donation_id AND o.kind = 'question' AND o.status = 'won' AND o.question = r.question) AS proposer`;
+		WHERE d.id = r.donation_id AND o.kind = 'question' AND o.status = 'won' AND o.question = r.question) AS proposer,
+	(SELECT NULLIF(q.parent_seq, 0) FROM questions q
+		WHERE q.project_id = r.project_id AND q.run_seq = r.seq AND q.origin = 'editor') AS raised_by`;
 
 export type RunListRow = Omit<RunRow, 'report_md' | 'report_html'>;
 
