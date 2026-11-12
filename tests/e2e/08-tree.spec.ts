@@ -176,6 +176,36 @@ test('a question in the tree can be proposed for the round from where it stands'
 	await other.context().close();
 });
 
+test('questions that the editor takes off its list are kept, behind one line', async ({ page }) => {
+	// On this prompt the stand-in's editor rewrites its list after each run, as real models commonly do.
+	await signIn(page, handle);
+	const project = await submitPrompt(page, 'What has resurfacing a canal towpath done for cycling? A prompt whose list is rewritten.');
+	expect((await donateViaApi(page, project, 0.3, 'anthropic/claude-opus-5.5')).status).toBe(201);
+	await finished(page);
+
+	await page.goto(`/p/${project}/tree`);
+	await expect(page.locator('.stats-strip div', { hasText: 'set aside' }).locator('dd')).toHaveText('2');
+	const root = page.locator('ul.tree > li').first();
+	// They are not in the way until they are asked for.
+	await expect(page.locator('ul.tree li.aside')).toHaveCount(0);
+	const group = root.getByRole('button', { name: '2 questions set aside by the editor' });
+	await expect(group).toHaveAttribute('aria-expanded', 'false');
+	await group.click();
+	const aside = page.locator('ul.tree li.aside', { hasText: 'How are injuries on towpaths recorded?' });
+	await expect(aside.locator('.tag')).toHaveText('Set aside');
+	await expect(aside).toContainText('Taken off the list by the editor after run 2');
+	await expect(aside.getByRole('link', { name: 'Propose' })).toBeVisible();
+	// The question that the second run researched came from the first run's list, and what replaced the others is open.
+	await expect(root.locator('> ul > li', { hasText: 'Which routes were counted for a full year?' }).locator('> .row')).toContainText('Run 2');
+	await expect(page.locator('ul.tree li.open', { hasText: 'Which authorities publish their counts?' })).toContainText('Listed by the editor after run 2');
+
+	// After the first run, those questions were still open, and are shown as they stood.
+	await page.getByRole('button', { name: 'One run earlier' }).click();
+	await expect(page.locator('.time [role=status]')).toContainText('After run 1 of 2');
+	await expect(page.locator('ul.tree li.open', { hasText: 'How are injuries on towpaths recorded?' }).locator('.tag')).toHaveText('Open');
+	await expect(page.getByRole('button', { name: /set aside by the editor/ })).toHaveCount(0);
+});
+
 test('a prompt with no research has a tree that says so, and the tree fits a phone', async ({ page }) => {
 	await signIn(page, handle);
 	const empty = await submitPrompt(page, 'What is known about the acoustics of covered markets? A prompt with no runs.');

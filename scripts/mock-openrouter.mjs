@@ -133,6 +133,24 @@ const TOPICS = [
 		questions: ['What share of packs reaches a recycler at present?', 'How do recycling emissions compare with those of primary mining?']
 	},
 	{
+		// Here the editor rewrites its list after each run, as real models commonly do, so that
+		// questions it had listed are taken off without being researched.
+		match: /canal|towpath/i,
+		reports: [
+			['Towpath resurfacing has raised cycling counts on the routes that were measured',
+				'Counts taken before and after resurfacing show more cycling on the stretches that were improved. Few of the counts were made over a full year.\n\nThis text is sample output produced by the demonstration.',
+				[['Towpath', 'https://en.wikipedia.org/wiki/Towpath']]],
+			['Conflict between walkers and cyclists is reported, but rarely measured',
+				'Surveys record complaints about speed on narrow stretches. Injury figures are not collected in a way that can be compared between routes.',
+				[['Canal', 'https://en.wikipedia.org/wiki/Canal']]]
+		],
+		questions: [],
+		rounds: [
+			['Which routes were counted for a full year?', 'What did the resurfacing cost for each kilometre?', 'How are injuries on towpaths recorded?'],
+			['What did resurfacing cost for each kilometre, and who paid?', 'Which authorities publish their counts?']
+		]
+	},
+	{
 		match: /./,
 		reports: [
 			['An initial survey of the available evidence',
@@ -187,7 +205,7 @@ function editorReply(system, user) {
 	const n = seen.get(prompt) ?? 1;
 	const previous = current.startsWith('None as yet') ? '' : current.replace(LEAD, '').trim();
 	const merged = `${LEAD}\n\n${previous ? `${previous}\n\n${user.trim()}` : user.trim()}`;
-	const questions = topic.questions.slice(Math.max(0, n - 1));
+	const questions = topic.rounds ? (topic.rounds[n - 1] ?? []) : topic.questions.slice(Math.max(0, n - 1));
 	const list = questions.map((q) => `- ${q}`).join('\n');
 	return `<findings>\n${merged}\n</findings>\n<questions>\n${list}\n</questions>`;
 }

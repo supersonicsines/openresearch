@@ -21,6 +21,8 @@
 
 	let only = $state<'all' | 'open'>('all');
 	let folded = $state<Record<string, boolean>>({});
+	/** The runs whose set-aside questions have been asked for. They are kept out of the way until then. */
+	let unfolded = $state<Record<string, boolean>>({});
 
 	const whole = $derived(treeAt(nodes, at));
 	const counts = $derived(tally(whole));
@@ -129,8 +131,7 @@
 		</ul>
 	</div>
 
-	{#snippet branches(list: Branch[])}
-		{#each list as branch (branch.node.id)}
+	{#snippet one(branch: Branch)}
 			{@const node = branch.node}
 			{@const closed = Boolean(folded[node.id])}
 			<li id={node.id} class="node {branch.state}" class:latest={!present && branch.state === 'researched' && node.run?.seq === at}>
@@ -190,14 +191,40 @@
 					</div>
 				</div>
 				{#if branch.children.length && !closed}
-					<ul>{@render branches(branch.children)}</ul>
+					<ul>{@render branches(branch.children, node.id)}</ul>
 				{/if}
 			</li>
+	{/snippet}
+
+	<!-- An editor commonly rewrites its list after a run, so many questions are set aside. They are part of
+	     the record, and are kept behind one line beneath each run so that the course of the research stays clear. -->
+	{#snippet branches(list: Branch[], owner: string)}
+		{@const aside = list.filter((branch) => branch.state === 'aside')}
+		{#each list.filter((branch) => branch.state !== 'aside') as branch (branch.node.id)}
+			{@render one(branch)}
 		{/each}
+		{#if aside.length}
+			<li class="node group">
+				<div class="row">
+					<span class="mark aside" aria-hidden="true"></span>
+					<div class="body">
+						<button class="fold small" type="button" aria-expanded={Boolean(unfolded[owner])} onclick={() => (unfolded[owner] = !unfolded[owner])}>
+							<svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class:turned={Boolean(unfolded[owner])}><path d="M6 3.5 10.5 8 6 12.5" /></svg>
+							<span>{plural(aside.length, 'question')} set aside by the editor</span>
+						</button>
+					</div>
+				</div>
+			</li>
+			{#if unfolded[owner]}
+				{#each aside as branch (branch.node.id)}
+					{@render one(branch)}
+				{/each}
+			{/if}
+		{/if}
 	{/snippet}
 
 	{#if shown.length}
-		<ul class="tree" aria-label="Questions, each beneath the run that raised it">{@render branches(shown)}</ul>
+		<ul class="tree" aria-label="Questions, each beneath the run that raised it">{@render branches(shown, 'top')}</ul>
 	{:else if at === 0}
 		<p class="muted none">Nothing had been asked before the first run.</p>
 	{:else}
@@ -451,6 +478,12 @@
 		background: var(--surface);
 		box-shadow: -10px 0 0 var(--surface), 10px 0 0 var(--surface);
 		border-radius: 4px;
+	}
+	.group > .row {
+		padding-block: 9px;
+	}
+	.group > .row > .mark {
+		margin-top: 7px;
 	}
 	.none {
 		margin-top: 22px;
